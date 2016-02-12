@@ -18,8 +18,8 @@ namespace SteamBot
 	{
 		private const string BotVersion = "3.1.1";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.11); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(18.77); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.55); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.22); //low
 
 		int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
 
@@ -1316,7 +1316,10 @@ namespace SteamBot
 			}
 			else
 			{
-				Bot.SteamFriends.SendChatMessage(offer.PartnerSteamId, EChatEntryType.ChatMsg, "I'm sorry, at this time I do not accept trade offers. Please check back some time, in the future I will have the ability to send and receive trade offers.");
+                //if ()
+                {
+                    //Bot.SteamFriends.SendChatMessage(offer.PartnerSteamId, EChatEntryType.ChatMsg, "I'm sorry, at this time I do not accept trade offers. Please check back some time, in the future I will have the ability to send and receive trade offers.");
+                }
 			}
 		}
 
