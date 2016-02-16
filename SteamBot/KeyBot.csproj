@@ -59,6 +59,9 @@
     <Reference Include="SteamKit2">
       <HintPath>..\packages\SteamKit2.1.6.5\lib\net40\SteamKit2.dll</HintPath>
     </Reference>
+    <Reference Include="SteamAuth">
+      <HintPath>..\packages\SteamAuth.1.0.1\lib\net45\SteamAuth.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Notifications.cs" />
@@ -89,10 +92,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\SteamAuth\SteamAuth\SteamAuth.csproj">
-      <Project>{5AD0934E-F6C4-4AE5-83AF-C788313B2A87}</Project>
-      <Name>SteamAuth</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SteamTrade\SteamTrade.csproj">
       <Project>{6CEC0333-81EB-40EE-85D1-941363626FC7}</Project>
       <Name>SteamTrade</Name>

@@ -56,6 +56,9 @@
     <Reference Include="SteamKit2">
       <HintPath>..\packages\SteamKit2.1.6.5\lib\net40\SteamKit2.dll</HintPath>
     </Reference>
+    <Reference Include="SteamAuth">
+      <HintPath>..\packages\SteamAuth.1.0.1\lib\net45\SteamAuth.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />

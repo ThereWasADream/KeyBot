@@ -16,18 +16,19 @@ namespace SteamBot
 {
 	public class KeyUserHandler : UserHandler
 	{
-		private const string BotVersion = "3.1.1";
+		private const string BotVersion = "3.1.3";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.55); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.22); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.33); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.00); //low
 
 		int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
-
+        double Item;
+        ulong Slots;
 		bool InventoryFailed, HasErrorRun, ChooseDonate, GaveChange, ChangeValidate, HasNonTradeCounted, HasCounted, WasBuying;
 
 		System.Timers.Timer InviteMsgTimer = new System.Timers.Timer(2000);
 		System.Timers.Timer CraftCheckTimer = new System.Timers.Timer(100);
-		System.Timers.Timer ConfirmationTimer = new System.Timers.Timer(60000);
+		System.Timers.Timer ConfirmationTimer = new System.Timers.Timer(120000);
 		System.Timers.Timer Cron = new System.Timers.Timer(1000);
 
 		public KeyUserHandler(Bot bot, SteamID sid)
@@ -55,7 +56,6 @@ namespace SteamBot
 		private void OnConfirmationTimerElapsed(object source, ElapsedEventArgs e)
 		{
 			Bot.AcceptAllMobileTradeConfirmations();
-			ConfirmationTimer.Enabled = false;
 		}
 
 		public override bool OnFriendAdd()
@@ -90,7 +90,13 @@ namespace SteamBot
 		private void OnCron(object source, ElapsedEventArgs e)
 		{
 			Cron.Interval = 10800000;
-			Bot.AcceptAllMobileTradeConfirmations();
+            CountInventory(false);
+            double FullCheck = Item / Slots;
+            var HeadAdmin = new SteamID(Bot.Admins.First());
+            if (FullCheck > 0.9)
+            {
+                Bot.SteamFriends.SendChatMessage(HeadAdmin, EChatEntryType.ChatMsg, "My inventory is getting full, boss.");
+            }
 			if (TradeFrequency < 12)
 			{
 				TradeFrequency++;
@@ -321,7 +327,7 @@ namespace SteamBot
 					}
 					catch (WebException e)
 					{
-						Thread.Sleep(500);
+						Thread.Sleep(50);
 						Bot.Log.Error("Failed to accept trade, retrying.", e);
 					}
 				}
@@ -1343,12 +1349,14 @@ namespace SteamBot
 				{
 					Bot.GetInventory();
 					Inventory.Item[] inventory = Bot.MyInventory.Items;
+                    Slots = Bot.MyInventory.NumSlots;
 					NonTradeScrap = 0;
 					NonTradeReclaimed = 0;
 					NonTradeRefined = 0;
 					NonTradeInventoryMetal = TF2Value.Zero;
 					NonTradeKeysCanBuy = 0;
 					NonTradeInventoryKeys = 0;
+                    Item = 0;
 					Inventory.Item[] array = inventory;
 					for (int i = 0; i < array.Length; i++)
 					{
@@ -1357,21 +1365,29 @@ namespace SteamBot
 						{
 							NonTradeInventoryMetal += TF2Value.Scrap;
 							NonTradeScrap++;
+                            Item++;
 						}
 						else if (item.Defindex == 5001)
 						{
 							NonTradeInventoryMetal += TF2Value.Reclaimed;
 							NonTradeReclaimed++;
+                            Item++;
 						}
 						else if (item.Defindex == 5002)
 						{
 							NonTradeInventoryMetal += TF2Value.Refined;
 							NonTradeRefined++;
+                            Item++;
 						}
 						else if (item.Defindex == 5021)
 						{
 							NonTradeInventoryKeys++;
+                            Item++;
 						}
+                        else
+                        {
+                            Item++;
+                        }
 					}
 					NonTradeKeysCanBuy = NonTradeInventoryMetal.GetPriceUsingItem(BuyPricePerKey, out LeftoverMetal);
 					if (message)
@@ -1385,7 +1401,7 @@ namespace SteamBot
 				catch (Exception e)
 				{
 					retries++;
-					Thread.Sleep((retries * 250) * (retries / 2));
+					Thread.Sleep((retries * 50) * (retries / 2));
 					if (retries >= 3)
 					{
 						Bot.Log.Error("Inventory request failed after " + retries.ToString() + " retries.", e);
@@ -1458,7 +1474,7 @@ namespace SteamBot
 				catch (Exception e)
 				{
 					retries++;
-					Thread.Sleep((retries * 300) * (retries / 2));
+					Thread.Sleep((retries * 100) * (retries / 2));
 					if (retries >= 3)
 					{
 						Bot.Log.Error("Inventory request failed after " + retries.ToString() + " retries.", e);
