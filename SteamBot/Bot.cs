@@ -1058,55 +1058,66 @@ namespace SteamBot
             return inventory;
         }
 
+        public bool AcceptTradeConfirmation(string tradeOfferId)
+        {
+            var confirmed = false;
+            if (SteamGuardAccount == null)
+            {
+                Log.Warn("Bot account does not have 2FA enabled.");
+            }
+            else
+            {
+                SteamGuardAccount.Session.SteamLogin = SteamWeb.Token;
+                SteamGuardAccount.Session.SteamLoginSecure = SteamWeb.TokenSecure;
+                try
+                {
+                    foreach (var confirmation in SteamGuardAccount.FetchConfirmations())
+                    {
+                        var confirmationTradeOfferId = SteamGuardAccount.GetConfirmationTradeOfferID(confirmation);
+                        if (tradeOfferId != confirmationTradeOfferId.ToString()) continue;
+                        if (SteamGuardAccount.AcceptConfirmation(confirmation))
+                        {
+                            confirmed = true;
+                            Log.Success("Confirmed {0}. (Confirmation ID #{1})", confirmation.ConfirmationDescription, confirmation.ConfirmationID);
+                            break;
+                        }
+                    }
+                }
+                catch (SteamAuth.SteamGuardAccount.WGTokenInvalidException)
+                {
+                    Log.Error("Invalid session when trying to fetch trade confirmations.");
+                }
+            }
+            return confirmed;
+        }
+
         /// <summary>
         /// Accepts all mobile trade confirmations.
         /// </summary>
         /// <returns><c>true</c>, if all mobile trade confirmations were accepted, <c>false</c> otherwise.</returns>
-        public bool AcceptAllMobileTradeConfirmations()
+        public void AcceptAllMobileTradeConfirmations()
         {
             if (SteamGuardAccount == null)
             {
                 Log.Warn("Bot account does not have 2FA enabled.");
-                return false;
             }
             else
             {
-                var confirmed = false;
-                // try to confirm up to 2 times, refreshing session after first failure
-                for (var i = 0; i < 2; i++)
+                SteamGuardAccount.Session.SteamLogin = SteamWeb.Token;
+                SteamGuardAccount.Session.SteamLoginSecure = SteamWeb.TokenSecure;
+                try
                 {
-                    SteamGuardAccount.Session.SteamLogin = SteamWeb.Token;
-                    SteamGuardAccount.Session.SteamLoginSecure = SteamWeb.TokenSecure;
-                    try
+                    foreach (var confirmation in SteamGuardAccount.FetchConfirmations())
                     {
-                        foreach (var confirmation in SteamGuardAccount.FetchConfirmations())
+                        if (SteamGuardAccount.AcceptConfirmation(confirmation))
                         {
-                            if (SteamGuardAccount.AcceptConfirmation(confirmation))
-                            {
-                                Log.Success("Confirmed {0}. (Confirmation ID #{1})", confirmation.ConfirmationDescription, confirmation.ConfirmationID);
-                            }
+                            Log.Success("Confirmed {0}. (Confirmation ID #{1})", confirmation.ConfirmationDescription, confirmation.ConfirmationID);
                         }
-                        confirmed = true;
                     }
-                    catch (SteamAuth.SteamGuardAccount.WGTokenInvalidException)
-                    {
-                        Log.Error("Invalid session when trying to fetch trade confirmations.");
-                    }
-                    if (confirmed)
-                    {
-                        return true;
-                    }
-                    SteamGuardAccount.RefreshSession();
-                    CheckCookies();
-                }                                     
-                if (!confirmed)
-                {
-                    Log.Error("Failed to accept all trade confirmations.");
-                    return false;
                 }
-                else
+                catch (SteamAuth.SteamGuardAccount.WGTokenInvalidException)
                 {
-                    return true;
+                    Log.Error("Invalid session when trying to fetch trade confirmations.");
                 }
             }
         }

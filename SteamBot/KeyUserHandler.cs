@@ -18,8 +18,8 @@ namespace SteamBot
 	{
 		private const string BotVersion = "3.1.3";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.44); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.11); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.55); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.22); //low
 
 		int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
@@ -28,7 +28,7 @@ namespace SteamBot
 
 		System.Timers.Timer InviteMsgTimer = new System.Timers.Timer(2000);
 		System.Timers.Timer CraftCheckTimer = new System.Timers.Timer(100);
-		System.Timers.Timer ConfirmationTimer = new System.Timers.Timer(120000);
+        System.Timers.Timer ConfirmationTimer = new System.Timers.Timer(300000);
 		System.Timers.Timer Cron = new System.Timers.Timer(1000);
 
 		public KeyUserHandler(Bot bot, SteamID sid)
@@ -47,6 +47,7 @@ namespace SteamBot
 			CraftCheckTimer.Elapsed += new ElapsedEventHandler(OnCraftCheckTimerElapsed);
 			ConfirmationTimer.Elapsed += new ElapsedEventHandler(OnConfirmationTimerElapsed);
 			CraftCheckTimer.Enabled = true;
+            ConfirmationTimer.Enabled = true;
 			Cron.Elapsed += new ElapsedEventHandler(OnCron);
 			Cron.Enabled = true;
 			Bot.AcceptAllMobileTradeConfirmations();
@@ -986,10 +987,7 @@ namespace SteamBot
 			IgnoringBot = 0;
 			SendChatMessage("I was coded by http://steamcommunity.com/id/Narthalion. Please report all bugs/problems to me! It helps fix issues and make me better.");
 			Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
-			if (!Bot.AcceptAllMobileTradeConfirmations())
-			{
-				ConfirmationTimer.Enabled = true;
-			}
+            Bot.AcceptAllMobileTradeConfirmations();
 		}
 
 		public override void OnTradeSuccess()
@@ -1001,6 +999,8 @@ namespace SteamBot
 		{
 			Bot.Log.Warn("Trade ended, awaiting confirmation. 2");
 			SendChatMessage("Please complete any mobile or email confirmations.");
+            var tradeid = tradeOfferID.ToString();
+            Bot.AcceptTradeConfirmation(tradeid);
 		}
 
 		private void OnCraftCheckTimerElapsed(object source, ElapsedEventArgs e)
@@ -1306,10 +1306,7 @@ namespace SteamBot
 					WhileLoop++;
 					if (offer.Accept())
 					{
-						if (!Bot.AcceptAllMobileTradeConfirmations())
-						{
-							ConfirmationTimer.Enabled = true;
-						}
+                        Bot.AcceptAllMobileTradeConfirmations();
 						Log.Success("Accepted Admin trade offer successfully.");
 						success = true;
 					}
