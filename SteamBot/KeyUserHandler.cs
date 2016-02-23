@@ -98,6 +98,10 @@ namespace SteamBot
             {
                 Bot.SteamFriends.SendChatMessage(HeadAdmin, EChatEntryType.ChatMsg, "My inventory is getting full, boss.");
             }
+            if (FullCheck > 0.5)
+            {
+                Bot.SteamFriends.SendChatMessage(HeadAdmin, EChatEntryType.ChatMsg, "My inventory is 50% full.");
+            }
 			if (TradeFrequency < 12)
 			{
 				TradeFrequency++;
