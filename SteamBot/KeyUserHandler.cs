@@ -16,7 +16,7 @@ namespace SteamBot
 {
 	public class KeyUserHandler : UserHandler
 	{
-		private const string BotVersion = "3.1.3";
+		private const string BotVersion = "3.1.4";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
 		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.66); //high
 		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.33); //low
@@ -363,11 +363,6 @@ namespace SteamBot
 				if (statusMessage == "cancelled by other user")
 				{
                     SendChatMessage("Trade cancelled. Thanks for your time. If you closed the trade due to the \"There was an error...\" message, wait a few seconds before closing the trade; the error often goes away.");
-				}
-				else if (statusMessage == "completed - pending confirmation")
-				{
-					Bot.Log.Warn("Confirmation1");
-					SendChatMessage("Please confirm the trade confirmation.");
 				}
 				else if (statusMessage == "cancelled by bot")
 				{
@@ -996,15 +991,17 @@ namespace SteamBot
 
 		public override void OnTradeSuccess()
 		{
-			Log.Success("Trade complete.");
+			//never reaches
+            //Log.Success("Trade complete.");
 		}
 
 		public override void OnTradeAwaitingConfirmation(long tradeOfferID)
 		{
-			Bot.Log.Warn("Trade ended, awaiting confirmation. 2");
-			SendChatMessage("Please complete any mobile or email confirmations.");
-            var tradeid = tradeOfferID.ToString();
-            Bot.AcceptTradeConfirmation(tradeid);
+			//nothing happens here
+            //Bot.Log.Warn("Trade ended, awaiting confirmation.");
+			//SendChatMessage("Please complete any mobile or email confirmations.");
+            //var tradeid = tradeOfferID.ToString();
+            //Bot.AcceptTradeConfirmation(tradeid);
 		}
 
 		private void OnCraftCheckTimerElapsed(object source, ElapsedEventArgs e)
@@ -1323,10 +1320,11 @@ namespace SteamBot
 			}
 			else
 			{
-                //if ()
-                {
+                Bot.AcceptAllMobileTradeConfirmations();
+                //if (offer = offer.)
+                //{
                     //Bot.SteamFriends.SendChatMessage(offer.PartnerSteamId, EChatEntryType.ChatMsg, "I'm sorry, at this time I do not accept trade offers. Please check back some time, in the future I will have the ability to send and receive trade offers.");
-                }
+                //}
 			}
 		}
 
