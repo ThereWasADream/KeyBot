@@ -18,8 +18,8 @@ namespace SteamBot
 	{
 		private const string BotVersion = "3.1.4";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.66); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.33); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.77); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.44); //low
 
 		int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
@@ -97,10 +97,6 @@ namespace SteamBot
             if (FullCheck > 0.9)
             {
                 Bot.SteamFriends.SendChatMessage(HeadAdmin, EChatEntryType.ChatMsg, "My inventory is getting full, boss.");
-            }
-            if (FullCheck > 0.5)
-            {
-                Bot.SteamFriends.SendChatMessage(HeadAdmin, EChatEntryType.ChatMsg, "My inventory is 50% full.");
             }
 			if (TradeFrequency < 12)
 			{
