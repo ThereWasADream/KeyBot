@@ -286,15 +286,19 @@ namespace SteamBot
 				}
 				else if (message == ".canceltrade")
 				{
-					if (Bot.CurrentTrade != null)
-					{
-						SteamID LastTradedSID = Trade.OtherSID;
-						Trade.CancelTrade();
-						Bot.SteamFriends.SendChatMessage(LastTradedSID, EChatEntryType.ChatMsg, "Trade forcefully closed. Please retry as soon as you are ready to trade instead of whatever you were doing.");
-						Bot.Log.Warn("Trade with " + Bot.SteamFriends.GetFriendPersonaName(LastTradedSID) + " cancelled.");
-						Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
-					}
-					SendChatMessage("There is no current trade to cancel.");
+                    if (Bot.CurrentTrade != null)
+                    {
+                        SteamID LastTradedSID = Trade.OtherSID;
+                        Trade.CancelTrade();
+                        Bot.SteamFriends.SendChatMessage(LastTradedSID, EChatEntryType.ChatMsg, "Trade forcefully closed. Please retry as soon as you are ready to trade instead of whatever you were doing.");
+                        Bot.Log.Warn("Trade with " + Bot.SteamFriends.GetFriendPersonaName(LastTradedSID) + " cancelled.");
+                        IgnoringBot += 4;
+                        Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
+                    }
+                    else
+                    {
+                        SendChatMessage("There is no current trade to cancel.");
+                    }
 				}
 				else if (message == ".auth")
 				{
