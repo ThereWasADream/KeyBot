@@ -16,7 +16,7 @@ namespace SteamBot
 {
 	public class KeyUserHandler : UserHandler
 	{
-		private const string BotVersion = "3.1.4";
+		private const string BotVersion = "3.1.5";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
 		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.88); //high
 		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.55); //low
@@ -1305,10 +1305,12 @@ namespace SteamBot
 				while (!success)
 				{
 					WhileLoop++;
-					if (offer.Accept())
+                    TradeOfferAcceptResponse acceptResp = offer.Accept();
+                    if (acceptResp.Accepted)
 					{
                         Bot.AcceptAllMobileTradeConfirmations();
 						Log.Success("Accepted Admin trade offer successfully.");
+                        //Log.Success("Accepted trade offer successfully : Trade ID: " + acceptResp.TradeId);
 						success = true;
 					}
 					else if (WhileLoop > 100)
