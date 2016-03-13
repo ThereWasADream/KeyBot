@@ -1,6 +1,7 @@
 using SteamKit2;
 using System.Collections.Generic;
 using SteamTrade;
+using SteamTrade.TradeOffer;
 
 namespace SteamBot
 {
@@ -49,7 +50,7 @@ namespace SteamBot
             return true;
         }
 
-        public override void OnTradeError(string error, string statusMessage) 
+        public override void OnTradeError (string error, string statusMessage) 
         {
             SendChatMessage("Oh, there was an error: {0}.", error);
             Log.Warn (error);
@@ -194,9 +195,12 @@ namespace SteamBot
             }
         }
 
-        public override void OnTradeSuccess()
+        public override void OnTradeOfferUpdated(TradeOffer offer)
         {
-            Log.Success("Trade Complete.");
+            if(offer.OfferState == TradeOfferState.TradeOfferStateAccepted)
+            {
+                Log.Success("Trade Complete.");
+            }
         }
 
         public override void OnTradeAwaitingConfirmation(long tradeOfferID)

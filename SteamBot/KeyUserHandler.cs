@@ -18,8 +18,8 @@ namespace SteamBot
 	{
 		private const string BotVersion = "3.1.5";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.88); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.55); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.66); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.33); //low
 
 		int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
@@ -48,15 +48,15 @@ namespace SteamBot
 			ConfirmationTimer.Elapsed += new ElapsedEventHandler(OnConfirmationTimerElapsed);
 			CraftCheckTimer.Enabled = true;
             ConfirmationTimer.Enabled = true;
+            Bot.AcceptAllMobileTradeConfirmations();
 			Cron.Elapsed += new ElapsedEventHandler(OnCron);
 			Cron.Enabled = true;
-			Bot.AcceptAllMobileTradeConfirmations();
 			TradeFrequency = 12;
 		}
 
 		private void OnConfirmationTimerElapsed(object source, ElapsedEventArgs e)
 		{
-			Bot.AcceptAllMobileTradeConfirmations();
+			//Bot.AcceptAllMobileTradeConfirmations();
 		}
 
 		public override bool OnFriendAdd()
@@ -696,10 +696,14 @@ namespace SteamBot
 			{
 				Bot.SteamFriends.RemoveFriend(DeleteID);
 				Bot.Log.Success("Deleted " + Bot.SteamFriends.GetFriendPersonaName(DeleteID) + ".");
+                var HeadAdmin = new SteamID(Bot.Admins.First());
+                Bot.SteamFriends.SendChatMessage(HeadAdmin, EChatEntryType.ChatMsg, "Deleted " + Bot.SteamFriends.GetFriendPersonaName(DeleteID) + ".");
 			}
 			else
 			{
 				Bot.Log.Error("Failed to remove friend. Input was " + EnteredID + ".");
+                var HeadAdmin = new SteamID(Bot.Admins.First());
+                Bot.SteamFriends.SendChatMessage(HeadAdmin, EChatEntryType.ChatMsg, "Failed to remove friend. Input was " + EnteredID + ".");
 			}
 		}
 
@@ -986,13 +990,6 @@ namespace SteamBot
 			IgnoringBot = 0;
 			SendChatMessage("I was coded by http://steamcommunity.com/id/Narthalion. Please report all bugs/problems to me! It helps fix issues and make me better.");
 			Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
-            Bot.AcceptAllMobileTradeConfirmations();
-		}
-
-		public override void OnTradeSuccess()
-		{
-			//never reaches
-            //Log.Success("Trade complete.");
 		}
 
 		public override void OnTradeAwaitingConfirmation(long tradeOfferID)
@@ -1003,6 +1000,54 @@ namespace SteamBot
             //var tradeid = tradeOfferID.ToString();
             //Bot.AcceptTradeConfirmation(tradeid);
 		}
+
+        public override void OnTradeOfferUpdated(TradeOffer offer)
+        {
+            switch (offer.OfferState)
+            {
+                case TradeOfferState.TradeOfferStateAccepted:
+                    Bot.Log.Info("Trade offer {offer.TradeOfferId} has been completed!");
+                    break;
+                case TradeOfferState.TradeOfferStateActive:
+                    if (Bot.Admins.Contains(offer.PartnerSteamId))
+                    {
+                        int WhileLoop = 0;
+                        bool success = false;
+                        while (!success)
+                        {
+                            WhileLoop++;
+                            TradeOfferAcceptResponse acceptResp = offer.Accept();
+                            if (acceptResp.Accepted)
+                            {
+                                Log.Success("Accepted Admin trade offer successfully.");
+                                //Log.Success("Accepted trade offer successfully : Trade ID: " + acceptResp.TradeId);
+                                success = true;
+                            }
+                            else if (WhileLoop > 100)
+                            {
+                                Bot.Log.Error("Unable to accept Admin trade offer.");
+                                break;
+                            }
+                        }
+                    }
+                    else
+                    {
+                    }
+                    break;
+                case TradeOfferState.TradeOfferStateNeedsConfirmation:
+                    Bot.AcceptAllMobileTradeConfirmations();
+                    break;
+                case TradeOfferState.TradeOfferStateInEscrow:
+                    //Trade is still active but incomplete
+                    break;
+                case TradeOfferState.TradeOfferStateCountered:
+                    Bot.Log.Info("Trade offer {offer.TradeOfferId} was countered");
+                    break;
+                default:
+                    Bot.Log.Info("Trade offer {offer.TradeOfferId} failed");
+                    break;
+            }
+        }
 
 		private void OnCraftCheckTimerElapsed(object source, ElapsedEventArgs e)
 		{
@@ -1296,39 +1341,37 @@ namespace SteamBot
 			return errors.Count == 0;
 		}
 
-		public override void OnNewTradeOffer(TradeOffer offer)
-		{
-			if (Bot.Admins.Contains(offer.PartnerSteamId))
-			{
-				int WhileLoop = 0;
-				bool success = false;
-				while (!success)
-				{
-					WhileLoop++;
-                    TradeOfferAcceptResponse acceptResp = offer.Accept();
-                    if (acceptResp.Accepted)
-					{
-                        Bot.AcceptAllMobileTradeConfirmations();
-						Log.Success("Accepted Admin trade offer successfully.");
-                        //Log.Success("Accepted trade offer successfully : Trade ID: " + acceptResp.TradeId);
-						success = true;
-					}
-					else if (WhileLoop > 100)
-					{
-						Bot.Log.Error("Unable to accept Admin trade offer.");
-						break;
-					}
-				}
-			}
-			else
-			{
-                Bot.AcceptAllMobileTradeConfirmations();
-                //if (offer = offer.)
-                //{
-                    //Bot.SteamFriends.SendChatMessage(offer.PartnerSteamId, EChatEntryType.ChatMsg, "I'm sorry, at this time I do not accept trade offers. Please check back some time, in the future I will have the ability to send and receive trade offers.");
-                //}
-			}
-		}
+//		public override void OnNewTradeOffer(TradeOffer offer)
+//		{
+//			if (Bot.Admins.Contains(offer.PartnerSteamId))
+//			{
+//				int WhileLoop = 0;
+//				bool success = false;
+//				while (!success)
+//				{
+//					WhileLoop++;
+//                    TradeOfferAcceptResponse acceptResp = offer.Accept();
+//                    if (acceptResp.Accepted)
+//					{
+//						Log.Success("Accepted Admin trade offer successfully.");
+//                        //Log.Success("Accepted trade offer successfully : Trade ID: " + acceptResp.TradeId);
+//						success = true;
+//					}
+//					else if (WhileLoop > 100)
+//					{
+//						Bot.Log.Error("Unable to accept Admin trade offer.");
+//						break;
+//					}
+//				}
+//			}
+//			else
+//			{
+//                //if (offer = offer.)
+//                //{
+//                    //Bot.SteamFriends.SendChatMessage(offer.PartnerSteamId, EChatEntryType.ChatMsg, "I'm sorry, at this time I do not accept trade offers. Please check back some time, in the future I will have the ability to send and receive trade offers.");
+//                //}
+//			}
+//		}
 
 		public void CountInventory(bool message)
 		{

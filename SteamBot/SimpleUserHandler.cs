@@ -1,6 +1,7 @@
 using SteamKit2;
 using System.Collections.Generic;
 using SteamTrade;
+using SteamTrade.TradeOffer;
 using SteamTrade.TradeWebAPI;
 
 namespace SteamBot
@@ -43,7 +44,7 @@ namespace SteamBot
             return true;
         }
 
-        public override void OnTradeError(string error, string statusMessage) 
+        public override void OnTradeError (string error, string statusMessage) 
         {
             SendChatMessage("Oh, there was an error: {0}.", error);
             Log.Warn (error);
@@ -82,15 +83,32 @@ namespace SteamBot
             }
         }
 
-        public override void OnTradeSuccess()
-        {
-            Log.Success("Trade Complete.");
-        }
-
         public override void OnTradeAwaitingConfirmation(long tradeOfferID)
         {
             Log.Warn("Trade ended awaiting confirmation");
             SendChatMessage("Please complete the confirmation to finish the trade");
+        }
+
+        public override void OnTradeOfferUpdated(TradeOffer offer)
+        {
+            switch (offer.OfferState)
+            {
+                case TradeOfferState.TradeOfferStateAccepted:
+                    Bot.Log.Info("Trade offer {offer.TradeOfferId} has been completed!");
+                    SendChatMessage("Trade completed, thank you!");
+                    break;
+                case TradeOfferState.TradeOfferStateActive:
+                case TradeOfferState.TradeOfferStateNeedsConfirmation:
+                case TradeOfferState.TradeOfferStateInEscrow:
+                    //Trade is still active but incomplete
+                    break;
+                case TradeOfferState.TradeOfferStateCountered:
+                    Bot.Log.Info("Trade offer {offer.TradeOfferId} was countered");
+                    break;
+                default:
+                    Bot.Log.Info("Trade offer {offer.TradeOfferId} failed");
+                    break;
+            }
         }
 
         public override void OnTradeAccept() 

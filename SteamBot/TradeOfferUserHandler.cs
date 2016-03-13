@@ -11,7 +11,15 @@ namespace SteamBot
     {
         public TradeOfferUserHandler(Bot bot, SteamID sid) : base(bot, sid) { }
 
-        public override void OnNewTradeOffer(TradeOffer offer)
+        public override void OnTradeOfferUpdated(TradeOffer offer)
+        {
+            if(offer.OfferState == TradeOfferState.TradeOfferStateAccepted)
+            {
+                OnNewTradeOffer(offer);
+            }
+        }
+
+        private void OnNewTradeOffer(TradeOffer offer)
         {
             //receiving a trade offer 
             if (IsAdmin)
@@ -108,11 +116,9 @@ namespace SteamBot
 
         public override bool OnTradeRequest() { return false; }
 
-        public override void OnTradeError(string error, string message) { }
+        public override void OnTradeError(string error, string statusMessage) { }
 
         public override void OnTradeTimeout() { }
-
-        public override void OnTradeSuccess() { }
 
         public override void OnTradeAwaitingConfirmation(long tradeOfferID) { }
 
