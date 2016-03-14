@@ -16,7 +16,7 @@ namespace SteamBot
 {
 	public class KeyUserHandler : UserHandler
 	{
-		private const string BotVersion = "3.1.5";
+		private const string BotVersion = "3.1.6";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
 		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.66); //high
 		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.33); //low
@@ -28,7 +28,7 @@ namespace SteamBot
 
 		System.Timers.Timer InviteMsgTimer = new System.Timers.Timer(2000);
 		System.Timers.Timer CraftCheckTimer = new System.Timers.Timer(100);
-        System.Timers.Timer ConfirmationTimer = new System.Timers.Timer(300000);
+        System.Timers.Timer ConfirmationTimer = new System.Timers.Timer(600000);
 		System.Timers.Timer Cron = new System.Timers.Timer(1000);
 
 		public KeyUserHandler(Bot bot, SteamID sid)
@@ -56,7 +56,7 @@ namespace SteamBot
 
 		private void OnConfirmationTimerElapsed(object source, ElapsedEventArgs e)
 		{
-			//Bot.AcceptAllMobileTradeConfirmations();
+			Bot.AcceptAllMobileTradeConfirmations();
 		}
 
 		public override bool OnFriendAdd()
@@ -1006,7 +1006,6 @@ namespace SteamBot
             switch (offer.OfferState)
             {
                 case TradeOfferState.TradeOfferStateAccepted:
-                    Bot.Log.Info("Trade offer {offer.TradeOfferId} has been completed!");
                     break;
                 case TradeOfferState.TradeOfferStateActive:
                     if (Bot.Admins.Contains(offer.PartnerSteamId))

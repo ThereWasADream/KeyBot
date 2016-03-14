@@ -405,9 +405,24 @@ namespace SteamBot
                         tradeOfferManager.EnqueueUpdatedOffers();
                         Success = true;
                     }
+                    catch (WebException ex)
+                    {
+                        var response = (HttpWebResponse)ex.Response;
+
+                        switch (response.StatusCode)
+                        {
+                            case HttpStatusCode.ServiceUnavailable: // 503?
+                                break;
+
+                            case HttpStatusCode.InternalServerError: // 500
+                                break;
+
+                            default:
+                                throw;
+                        }
+                    }
                     catch (Exception e)
                     {
-                        retries++;
                         if (retries >= 5)
                         {
                             Log.Error("Error while polling trade offers: " + e);
