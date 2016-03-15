@@ -408,17 +408,24 @@ namespace SteamBot
                     catch (WebException ex)
                     {
                         var response = (HttpWebResponse)ex.Response;
-
-                        switch (response.StatusCode)
+                        if (response != null)
                         {
-                            case HttpStatusCode.ServiceUnavailable: // 503?
-                                break;
+                            switch (response.StatusCode)
+                            {
+                                case HttpStatusCode.ServiceUnavailable: // 503
+                                    break;
 
-                            case HttpStatusCode.InternalServerError: // 500
-                                break;
+                                case HttpStatusCode.InternalServerError: // 500
+                                    break;
 
-                            default:
-                                throw;
+                                default:
+                                    Log.Error("WebException while polling trade offers: " + response);
+                                    break;
+                            }
+                        }
+                        else
+                        {
+                            Log.Error("Null response while polling trade offers.");
                         }
                     }
                     catch (Exception e)
