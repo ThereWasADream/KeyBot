@@ -28,7 +28,6 @@ namespace SteamBot
 
 		System.Timers.Timer InviteMsgTimer = new System.Timers.Timer(2000);
 		System.Timers.Timer CraftCheckTimer = new System.Timers.Timer(100);
-        System.Timers.Timer ConfirmationTimer = new System.Timers.Timer(600000);
 		System.Timers.Timer Cron = new System.Timers.Timer(1000);
 
 		public KeyUserHandler(Bot bot, SteamID sid)
@@ -45,18 +44,11 @@ namespace SteamBot
 		{
 			Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
 			CraftCheckTimer.Elapsed += new ElapsedEventHandler(OnCraftCheckTimerElapsed);
-			ConfirmationTimer.Elapsed += new ElapsedEventHandler(OnConfirmationTimerElapsed);
 			CraftCheckTimer.Enabled = true;
-            ConfirmationTimer.Enabled = true;
             Bot.AcceptAllMobileTradeConfirmations();
 			Cron.Elapsed += new ElapsedEventHandler(OnCron);
 			Cron.Enabled = true;
 			TradeFrequency = 12;
-		}
-
-		private void OnConfirmationTimerElapsed(object source, ElapsedEventArgs e)
-		{
-			Bot.AcceptAllMobileTradeConfirmations();
 		}
 
 		public override bool OnFriendAdd()
@@ -994,11 +986,10 @@ namespace SteamBot
 
 		public override void OnTradeAwaitingConfirmation(long tradeOfferID)
 		{
-			//nothing happens here
-            //Bot.Log.Warn("Trade ended, awaiting confirmation.");
-			//SendChatMessage("Please complete any mobile or email confirmations.");
-            //var tradeid = tradeOfferID.ToString();
-            //Bot.AcceptTradeConfirmation(tradeid);
+            Bot.Log.Warn("Trade ended, awaiting confirmation.");
+			SendChatMessage("Please complete any mobile or email confirmations.");
+            var tradeid = tradeOfferID.ToString();
+            Bot.AcceptTradeConfirmation(tradeid);
 		}
 
         public override void OnTradeOfferUpdated(TradeOffer offer)

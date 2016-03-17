@@ -394,48 +394,13 @@ namespace SteamBot
         {
             while (tradeOfferThread == Thread.CurrentThread)
             {
-                int WhileLoop = 0;
-                int retries = 0;
-                bool Success = false;
-                while (WhileLoop < 100 && !Success)
+                try
                 {
-                    WhileLoop++;
-                    try
-                    {
-                        tradeOfferManager.EnqueueUpdatedOffers();
-                        Success = true;
-                    }
-                    catch (WebException ex)
-                    {
-                        var response = (HttpWebResponse)ex.Response;
-                        if (response != null)
-                        {
-                            switch (response.StatusCode)
-                            {
-                                case HttpStatusCode.ServiceUnavailable: // 503
-                                    break;
-
-                                case HttpStatusCode.InternalServerError: // 500
-                                    break;
-
-                                default:
-                                    Log.Error("WebException while polling trade offers: " + response);
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            Log.Error("Null response while polling trade offers.");
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        if (retries >= 5)
-                        {
-                            Log.Error("Error while polling trade offers: " + e);
-                            break;
-                        }
-                    }
+                    tradeOfferManager.EnqueueUpdatedOffers();
+                }
+                catch (Exception)
+                {
+                    //no need, mostly just random 500's and 503's
                 }
                 Thread.Sleep(tradeOfferPollingIntervalSecs*1000);
             }
