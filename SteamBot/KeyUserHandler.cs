@@ -18,7 +18,7 @@ namespace SteamBot
 	{
 		private const string BotVersion = "3.1.6";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(18.00); //high
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(17.66); //high
 		public static TF2Value BuyPricePerKey = TF2Value.FromRef(17.33); //low
 
 		int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
@@ -316,17 +316,17 @@ namespace SteamBot
 					{
 						if (!OtherWebClients.IsMarked(OtherSID.Render(false)))
 						{
-							Bot.Log.Success("Began trade!");
-							return true;
+                            Bot.Log.Success("Began trade!");
+						    return true;
 						}
 						Bot.Log.Error("Declined trade, user is marked as a scammer on SteamRep.");
 						SendChatMessage("I'm sorry, it looks like you are marked as a scammer on SteamRep. Per TF2 Outpost rules, I cannot trade with you. Nothing personal! If this is an error, please appeal on SteamRep. Thank you!");
 						return false;
 					}
-					catch (WebException e)
+					catch (Exception e)
 					{
 						Thread.Sleep(50);
-						Bot.Log.Error("Failed to accept trade, retrying.", e);
+						Bot.Log.Error("Failed to accept trade, retrying.");
 					}
 				}
 				Bot.Log.Error("Failed to start trade after 5 retries.");
@@ -991,6 +991,7 @@ namespace SteamBot
 			SendChatMessage("Please complete any mobile or email confirmations.");
             var tradeid = tradeOfferID.ToString();
             Bot.AcceptTradeConfirmation(tradeid);
+            Bot.AcceptAllMobileTradeConfirmations();
 		}
 
         public override void OnTradeOfferUpdated(TradeOffer offer)
@@ -1031,6 +1032,7 @@ namespace SteamBot
                     break;
                 case TradeOfferState.TradeOfferStateInEscrow:
                     //Trade is still active but incomplete
+                    Bot.AcceptAllMobileTradeConfirmations();
                     break;
                 case TradeOfferState.TradeOfferStateCountered:
                     Bot.Log.Info("Trade offer {offer.TradeOfferId} was countered");
@@ -1440,7 +1442,7 @@ namespace SteamBot
 					Thread.Sleep((retries * 50) * (retries / 2));
 					if (retries >= 3)
 					{
-						Bot.Log.Error("Inventory request failed after " + retries.ToString() + " retries.", e);
+						Bot.Log.Error("Inventory request failed after " + retries.ToString() + " retries.");
 						InventoryFailed = true;
 						Done = true;
 					}
@@ -1513,7 +1515,7 @@ namespace SteamBot
 					Thread.Sleep((retries * 100) * (retries / 2));
 					if (retries >= 3)
 					{
-						Bot.Log.Error("Inventory request failed after " + retries.ToString() + " retries.", e);
+						Bot.Log.Error("Inventory request failed after " + retries.ToString() + " retries.");
 						InventoryFailed = true;
 						Done = true;
 					}

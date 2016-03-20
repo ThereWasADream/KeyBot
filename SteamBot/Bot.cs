@@ -439,6 +439,7 @@ namespace SteamBot
             }
             catch (SteamTrade.Exceptions.InventoryFetchException)
             {
+                Log.Error("Should not get here - check HandleTradeSessionStart");
                 // we shouldn't get here because the inv checks are also
                 // done in the TradeProposedCallback handler.
                 /*string response = String.Empty;
@@ -687,18 +688,20 @@ namespace SteamBot
                     }
                     catch (WebException we)
                     {                 
+                        Log.Error("Initialize trade reached WebException.");
                         SteamFriends.SendChatMessage(callback.OtherClient,
                             EChatEntryType.ChatMsg,
-                            "Trade error: " + we.Message);
+                            "Steam lost our connection. Try again later.");
 
                         SteamTrade.RespondToTrade(callback.TradeID, false);
                         return;
                     }
                     catch (Exception)
                     {
+                        Log.Error("Initialize trade reached Exception.");
                         SteamFriends.SendChatMessage(callback.OtherClient,
                             EChatEntryType.ChatMsg,
-                            "Trade declined. Could not correctly fetch your backpack.");
+                            "Trade declined. Could not correctly fetch your backpack. Either Steam is having issues, or your backpack is private.");
 
                         SteamTrade.RespondToTrade(callback.TradeID, false);
                         return;
