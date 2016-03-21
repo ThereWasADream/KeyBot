@@ -116,7 +116,7 @@ namespace SteamBot
 
         public override bool OnTradeRequest() { return false; }
 
-        public override void OnTradeError(string error, string statusMessage) { }
+        public override void OnTradeError(string error) { }
 
         public override void OnTradeTimeout() { }
 

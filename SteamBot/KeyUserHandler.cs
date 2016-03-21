@@ -16,10 +16,10 @@ namespace SteamBot
 {
 	public class KeyUserHandler : UserHandler
 	{
-		private const string BotVersion = "3.1.6";
+		private const string BotVersion = "3.1.7";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(17.66); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(17.33); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(16.33); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(16.00); //low
 
 		int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
@@ -319,16 +319,19 @@ namespace SteamBot
                             Bot.Log.Success("Began trade!");
 						    return true;
 						}
-						Bot.Log.Error("Declined trade, user is marked as a scammer on SteamRep.");
-						SendChatMessage("I'm sorry, it looks like you are marked as a scammer on SteamRep. Per TF2 Outpost rules, I cannot trade with you. Nothing personal! If this is an error, please appeal on SteamRep. Thank you!");
-						return false;
-					}
-					catch (Exception e)
-					{
-						Thread.Sleep(50);
-						Bot.Log.Error("Failed to accept trade, retrying.");
-					}
-				}
+                        else
+                        {
+                            Bot.Log.Error("Declined trade, user is marked as a scammer on SteamRep.");
+                            SendChatMessage("I'm sorry, it looks like you are marked as a scammer on SteamRep. Per TF2 Outpost rules, I cannot trade with you. Nothing personal! If this is an error, please appeal on SteamRep. Thank you!");
+                            return false;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        Thread.Sleep(50);
+                        Bot.Log.Error("Failed to accept trade, retrying.");
+                    }
+                }
 				Bot.Log.Error("Failed to start trade after 5 retries.");
 				Bot.Log.Error("SteamRep may be down. Beginning trade anyway.");
 				return true;
@@ -340,34 +343,33 @@ namespace SteamBot
 			}
 		}
 
-		public override void OnStatusError(Trade.TradeStatusType status)
+		public override void OnTradeError(string error)
 		{
-			string otherUserName = Bot.SteamFriends.GetFriendPersonaName(OtherSID);
-			string statusMessage = (Trade != null) ? Trade.GetTradeStatusErrorString(status) : "died a horrible death";
-			string error = string.Format("Trade with {0} ({1}) {2}", otherUserName, OtherSID.ConvertToUInt64(), statusMessage);
-			OnTradeError(error, statusMessage);
-		}
-
-		public override void OnTradeError(string error, string statusMessage)
-		{
-			Log.Warn(error);
 			if (!HasErrorRun)
 			{
-				if (statusMessage == "cancelled by other user")
-				{
+                if (error.Contains("cancelled by other user"))
+                {
+                    Bot.Log.Warn(error);
                     SendChatMessage("Trade cancelled. Thanks for your time. If you closed the trade due to the \"There was an error...\" message, wait a few seconds before closing the trade; the error often goes away.");
-				}
-				else if (statusMessage == "cancelled by bot")
-				{
-					//Nothing
-				}
-				else if (statusMessage == "expired because other user timed out")
-				{
-					SendChatMessage("Steam reports that your trade expired. This means Steam is just too slow to handle our slick trading skillz. Try again later.");
-				}
+                }
+                else if (error.Contains("cancelled by bot"))
+                {
+                    Bot.Log.Warn(error);
+                }
+                else if (error.Contains("expired because") && error.Contains("timed out"))
+                {
+                    Bot.Log.Error(error);
+                    SendChatMessage("Steam reports that your trade timed out. This means Steam is slow and lagging. Try again later.");
+                }
+                else if (error.Contains("failed unexpectedly"))
+                {
+                    Bot.Log.Error(error);
+                    SendChatMessage("Steam reports that the \"trade failed unexpectedly.\" This is likely due to problems with Steam servers.");
+                }
 				else
 				{
-					SendChatMessage("Steam reports that the trade ended because it " + statusMessage + "...which is clearly not my fault. Don't blame me!");
+                    Bot.Log.Error(error);
+                    SendChatMessage("Steam reports that the trade ended because it of an unknown Steam error. Try again when Steam is working better.");
 				}
 				HasErrorRun = true;
 			}

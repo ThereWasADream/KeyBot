@@ -221,7 +221,7 @@ namespace SteamTrade
 
         public delegate void WaitingForEmailHandler(long tradeOfferID);
 
-        public delegate void ErrorHandler(string errorMessage, string statusmessage);
+        public delegate void ErrorHandler(string errorMessage);
 
         public delegate void StatusErrorHandler(TradeStatusType statusType);
 
@@ -861,12 +861,12 @@ namespace SteamTrade
                 onCloseEvent();
         }
 
-        internal void FireOnErrorEvent(string message, string status)
+        internal void FireOnErrorEvent(string message)
         {
             var onErrorEvent = OnError;
 
             if(onErrorEvent != null)
-                onErrorEvent(message, status);
+                onErrorEvent(message);
         }
 
         internal void FireOnStatusErrorEvent(TradeStatusType statusType)

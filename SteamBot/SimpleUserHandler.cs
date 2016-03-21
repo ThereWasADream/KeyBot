@@ -44,7 +44,7 @@ namespace SteamBot
             return true;
         }
 
-        public override void OnTradeError (string error, string statusMessage) 
+        public override void OnTradeError (string error) 
         {
             SendChatMessage("Oh, there was an error: {0}.", error);
             Log.Warn (error);
