@@ -16,10 +16,10 @@ namespace SteamBot
 {
 	public class KeyUserHandler : UserHandler
 	{
-		private const string BotVersion = "3.1.7";
+		private const string BotVersion = "3.1.9";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(16.33); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(16.00); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(16.88); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(16.55); //low
 
 		int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
@@ -28,6 +28,7 @@ namespace SteamBot
 
 		System.Timers.Timer InviteMsgTimer = new System.Timers.Timer(2000);
 		System.Timers.Timer CraftCheckTimer = new System.Timers.Timer(100);
+        System.Timers.Timer ConfirmationTimer = new System.Timers.Timer(300000);
 		System.Timers.Timer Cron = new System.Timers.Timer(1000);
 
 		public KeyUserHandler(Bot bot, SteamID sid)
@@ -45,7 +46,6 @@ namespace SteamBot
 			Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
 			CraftCheckTimer.Elapsed += new ElapsedEventHandler(OnCraftCheckTimerElapsed);
 			CraftCheckTimer.Enabled = true;
-            Bot.AcceptAllMobileTradeConfirmations();
 			Cron.Elapsed += new ElapsedEventHandler(OnCron);
 			Cron.Enabled = true;
 			TradeFrequency = 12;
@@ -84,7 +84,6 @@ namespace SteamBot
 		{
 			Cron.Interval = 10800000;
             CountInventory(false);
-            Bot.AcceptAllMobileTradeConfirmations();
             double FullCheck = Item / Slots;
             var HeadAdmin = new SteamID(Bot.Admins.First());
             if (FullCheck > 0.9)
@@ -105,65 +104,70 @@ namespace SteamBot
 		public override void OnMessage(string message, EChatEntryType type)
 		{
 			message = message.ToLower();
-			if (message == "price")
-			{
-				SendChatMessage("I buy keys for " + BuyPricePerKey.ToRefString() + ", and sell keys for " + SellPricePerKey.ToRefString() + ".");
-			}
-			else if ((message.Contains("love") || message.Contains("luv") || message.Contains("<3")) && (message.Contains("y") || message.Contains("u")))
-			{
-				if (message.Contains("do"))
-				{
-					SendChatMessage("I love you lots. <3");
-				}
-				else
-				{
-					SendChatMessage("I love you too!");
-				}
-			}
-			else if (message.Contains("<3"))
-			{
-				SendChatMessage("<3");
-			}
-			else if (message.Contains("thank"))
-			{
-				SendChatMessage("You're welcome!");
-			}
-			else if (message == "donate")
-			{
-				SendChatMessage("Please type that command into the trade window. And thanks!");
-			}
-			else if (message == "buy")
-			{
-				SendChatMessage("That's not a command. Please trade to begin and add keys or metal. Type 'help' for more info.");
-			}
-			else if (message == "sell")
-			{
-				SendChatMessage("That's not a command. Please trade to begin and add keys or metal. Type 'help' for more info.");
-			}
-			else if (message == "trade")
-			{
-				SendChatMessage("That's not a command. Please trade to begin and add keys or metal. Type 'help' for more info.");
-			}
-			else if (message.Contains("stupid") || message.Contains("fuck") || message.Contains("can't") || message.Contains("cant") || message.Contains("what"))
-			{
-				SendChatMessage("Hey, do you need help? Type \"help\" for more info. Or else, are trades failing? Chances are that Steam is having the issues -- not me!");
-			}
-			else if (message.Contains("help"))
-			{
-				SendChatMessage("Type \"price\" to see my current prices. Type \"stock\" to see what I have. Then trade me, and put up your keys or metal and I will add my keys or exact price in metal automatically. You MUST put up exact metal if buying keys. I also accept donations of either keys or metal. To donate, type \"donate\" in the trade window!");
-			}
-			else if (message == "commands")
-			{
-				SendChatMessage("Type \"price\" to see my current prices. Type \"stock\" to see what I have. Type \"info\" for more information on this bot via a link to the bot's TF2Outpost page. Type \"help\" for a guide on how to trade with the bot. Type \"group\" to be invited to the group (WIP). To donate, type \"donate\" in the trade window!");
-			}
-			else if (message == "info")
-			{
-				SendChatMessage("More information about this bot can be found here: http://steamcommunity.com/groups/NarthsBots .");
-			}
-			else if (message == "group")
-			{
-				SendChatMessage("Coming soon...invite to group feature. But here is the group: http://steamcommunity.com/groups/NarthsBots .");
-			}
+            if (message == "price")
+            {
+                SendChatMessage("I buy keys for " + BuyPricePerKey.ToRefString() + ", and sell keys for " + SellPricePerKey.ToRefString() + ".");
+            }
+            else if ((message.Contains("love") || message.Contains("luv") || message.Contains("<3")) && (message.Contains("y") || message.Contains("u")))
+            {
+                if (message.Contains("do"))
+                {
+                    SendChatMessage("I love you lots. <3");
+                }
+                else
+                {
+                    SendChatMessage("I love you too!");
+                }
+            }
+            else if (message.Contains("<3"))
+            {
+                SendChatMessage("<3");
+            }
+            else if (message.Contains("thank"))
+            {
+                SendChatMessage("You're welcome!");
+            }
+            else if (message == "donate")
+            {
+                SendChatMessage("Please type that command into the trade window. And thanks!");
+            }
+            else if (message == "buy")
+            {
+                SendChatMessage("That's not a command. Please trade to begin and add keys or metal. Type 'help' for more info.");
+            }
+            else if (message == "sell")
+            {
+                SendChatMessage("That's not a command. Please trade to begin and add keys or metal. Type 'help' for more info.");
+            }
+            else if (message == "trade")
+            {
+                SendChatMessage("That's not a command. Please trade to begin and add keys or metal. Type 'help' for more info.");
+            }
+            else if (message.Contains("stupid") || message.Contains("fuck") || message.Contains("can't") || message.Contains("cant") || message.Contains("what"))
+            {
+                SendChatMessage("Hey, do you need help? Type \"help\" for more info. Or else, are trades failing? Chances are that Steam is having the issues -- not me!");
+            }
+            else if (message.Contains("help"))
+            {
+                SendChatMessage("Type \"price\" to see my current prices. Type \"stock\" to see what I have. Then trade me, and put up your keys or metal and I will add my keys or exact price in metal automatically. You MUST put up exact metal if buying keys. I also accept donations of either keys or metal. To donate, type \"donate\" in the trade window!");
+            }
+            else if (message == "commands")
+            {
+                SendChatMessage("Type \"price\" to see my current prices. Type \"stock\" to see what I have. Type \"confirm\" to have your trades confirmed if the bot does not do so. Type \"info\" for more information on this bot via a link to the bot's TF2Outpost page. Type \"help\" for a guide on how to trade with the bot. Type \"group\" to be invited to the group (WIP). To donate, type \"donate\" in the trade window!");
+            }
+            else if (message == "info")
+            {
+                SendChatMessage("More information about this bot can be found here: http://steamcommunity.com/groups/NarthsBots .");
+            }
+            else if (message == "group")
+            {
+                SendChatMessage("Coming soon...invite to group feature. But here is the group: http://steamcommunity.com/groups/NarthsBots .");
+            }
+            else if (message == "confirm")
+            {
+                Bot.AcceptAllMobileTradeConfirmations();
+                SendChatMessage("Confirming all my trades. Message from owner: The bots are set to confirm trades automatically but it still doesn't work like it should. I'm sorry but I've done all I can, I promise.");
+            }
 			else if (message == "stock" || message == "inventory")
 			{
 				HasNonTradeCounted = false;
@@ -984,16 +988,23 @@ namespace SteamBot
 			ScamAttempt = 0;
 			IgnoringBot = 0;
 			SendChatMessage("I was coded by http://steamcommunity.com/id/Narthalion. Please report all bugs/problems to me! It helps fix issues and make me better.");
+            ConfirmationTimer.Elapsed += new ElapsedEventHandler(OnConfirmationTimerElapsed);
+            ConfirmationTimer.Enabled = true;
 			Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
 		}
+
+        private void OnConfirmationTimerElapsed(object source, ElapsedEventArgs e)
+        {
+            ConfirmationTimer.Enabled = false;
+            Bot.AcceptAllMobileTradeConfirmations();
+        }
 
 		public override void OnTradeAwaitingConfirmation(long tradeOfferID)
 		{
             Bot.Log.Warn("Trade ended, awaiting confirmation.");
-			SendChatMessage("Please complete any mobile or email confirmations.");
+			SendChatMessage("Please complete any mobile or email confirmations. Type \"confirm\" if the bot does not confirm within 5 minutes.");
             var tradeid = tradeOfferID.ToString();
             Bot.AcceptTradeConfirmation(tradeid);
-            Bot.AcceptAllMobileTradeConfirmations();
 		}
 
         public override void OnTradeOfferUpdated(TradeOffer offer)
@@ -1026,7 +1037,7 @@ namespace SteamBot
                     }
                     else
                     {
-                        Bot.AcceptAllMobileTradeConfirmations();
+                        //nothing
                     }
                     break;
                 case TradeOfferState.TradeOfferStateNeedsConfirmation:
@@ -1034,7 +1045,6 @@ namespace SteamBot
                     break;
                 case TradeOfferState.TradeOfferStateInEscrow:
                     //Trade is still active but incomplete
-                    Bot.AcceptAllMobileTradeConfirmations();
                     break;
                 case TradeOfferState.TradeOfferStateCountered:
                     Bot.Log.Info("Trade offer {offer.TradeOfferId} was countered");
