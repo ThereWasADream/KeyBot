@@ -1112,7 +1112,6 @@ namespace SteamBot
         /// <summary>
         /// Accepts all mobile trade confirmations.
         /// </summary>
-        /// <returns><c>true</c>, if all mobile trade confirmations were accepted, <c>false</c> otherwise.</returns>
         public void AcceptAllMobileTradeConfirmations()
         {
             if (SteamGuardAccount == null)
@@ -1122,16 +1121,36 @@ namespace SteamBot
             else
             {
                 var confirmed = false;
+                var FailedOnce = false;
                 int WhileLoop = 0;
                 SteamGuardAccount.Session.SteamLogin = SteamWeb.Token;
                 SteamGuardAccount.Session.SteamLoginSecure = SteamWeb.TokenSecure;
                 do
                 {
                     WhileLoop++;
+                    if (WhileLoop > 25)
+                    {
+                        if (!FailedOnce)
+                        {
+                            Thread.Sleep(60000);
+                            WhileLoop = 0;
+                            FailedOnce = true;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
                     try
                     {
+                        var RunOnce = true;
                         foreach (var confirmation in SteamGuardAccount.FetchConfirmations())
                         {
+                            if (RunOnce)
+                            {
+                                Log.Warn("Confirming all trades.");
+                                RunOnce = false;
+                            }
                             if (SteamGuardAccount.AcceptConfirmation(confirmation))
                             {
                                 Log.Success("Confirmed {0}. (Confirmation ID #{1})", confirmation.ConfirmationDescription, confirmation.ConfirmationID);
@@ -1142,15 +1161,17 @@ namespace SteamBot
                     catch (SteamAuth.SteamGuardAccount.WGTokenInvalidException)
                     {
                         Log.Error("Invalid session when trying to fetch trade confirmations.");
+                        Thread.Sleep(5000);
                     }
                     catch
                     {
                         Log.Error("Unexpected response from Steam when trying to fetch trade confirmations.");
+                        Thread.Sleep(5000);
                     }
                     SteamGuardAccount.RefreshSession();
                     CheckCookies();
-                    Thread.Sleep(10);
-                } while (confirmed = false && WhileLoop < 100);
+                    Thread.Sleep(10000);
+                } while (confirmed == false);
             }
         }
 
@@ -1263,7 +1284,6 @@ namespace SteamBot
         private void BackgroundWorkerOnDoWork(object sender, DoWorkEventArgs doWorkEventArgs)
         {
             ICallbackMsg msg;
-
             while (!botThread.CancellationPending)
             {
                 try
@@ -1283,12 +1303,14 @@ namespace SteamBot
                 }
                 catch (WebException e)
                 {
-                    Log.Error("URI: {0} >> {1}", (e.Response != null && e.Response.ResponseUri != null ? e.Response.ResponseUri.ToString() : "unknown"), e.ToString());
+                    Log.Error("URI: {0} >> {1}", (e.Response != null && e.Response.ResponseUri != null ? e.Response.ResponseUri.ToString() : "unknown"), "Steam is down, retrying in 45 seconds.");
                     System.Threading.Thread.Sleep(45000);//Steam is down, retry in 45 seconds.
+                    continue;
                 }
                 catch (Exception e)
                 {
                     Log.Error("Unhandled exception occurred in bot: " + e);
+                    continue;
                 }
             }
         }

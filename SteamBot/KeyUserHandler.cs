@@ -16,10 +16,10 @@ namespace SteamBot
 {
 	public class KeyUserHandler : UserHandler
 	{
-		private const string BotVersion = "3.1.9";
+		private const string BotVersion = "3.2.0";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(16.88); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(16.55); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(18.00); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(17.22); //low
 
 		int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
@@ -44,6 +44,7 @@ namespace SteamBot
 		public override void OnLoginCompleted()
 		{
 			Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
+            Bot.AcceptAllMobileTradeConfirmations();
 			CraftCheckTimer.Elapsed += new ElapsedEventHandler(OnCraftCheckTimerElapsed);
 			CraftCheckTimer.Enabled = true;
 			Cron.Elapsed += new ElapsedEventHandler(OnCron);
