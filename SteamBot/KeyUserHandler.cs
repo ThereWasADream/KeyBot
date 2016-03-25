@@ -18,8 +18,8 @@ namespace SteamBot
 	{
 		private const string BotVersion = "3.2.0";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(17.88); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(17.55); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(17.77); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(17.33); //low
 
 		int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
@@ -150,7 +150,7 @@ namespace SteamBot
             }
             else if (message.Contains("help"))
             {
-                SendChatMessage("Type \"price\" to see my current prices. Type \"stock\" to see what I have. Then trade me, and put up your keys or metal and I will add my keys or exact price in metal automatically. You MUST put up exact metal if buying keys. I also accept donations of either keys or metal. To donate, type \"donate\" in the trade window!");
+                SendChatMessage("Type \"price\" to see my current prices. Type \"stock\" to see what I have. Then trade me, and put up your keys or metal and I will add my keys or exact price in metal automatically. Type \"commands\" for a list of commands.");
             }
             else if (message == "commands")
             {
@@ -167,7 +167,7 @@ namespace SteamBot
             else if (message == "confirm")
             {
                 Bot.AcceptAllMobileTradeConfirmations();
-                SendChatMessage("Confirming all my trades. Message from owner: The bots are set to confirm trades automatically but it still doesn't work like it should. I'm sorry but I've done all I can, I promise.");
+                SendChatMessage("Confirming all my trades. Message from owner: If this does not work, Steam failed to send a confirmation. Redo your trade. This is out of my control.");
             }
 			else if (message == "stock" || message == "inventory")
 			{

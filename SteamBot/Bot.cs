@@ -1122,6 +1122,7 @@ namespace SteamBot
             {
                 var confirmed = false;
                 var FailedOnce = false;
+                var TradesExist = false;
                 int WhileLoop = 0;
                 SteamGuardAccount.Session.SteamLogin = SteamWeb.Token;
                 SteamGuardAccount.Session.SteamLoginSecure = SteamWeb.TokenSecure;
@@ -1136,7 +1137,7 @@ namespace SteamBot
                             WhileLoop = 0;
                             FailedOnce = true;
                         }
-                        else
+                        if (FailedOnce && !TradesExist)
                         {
                             break;
                         }
@@ -1150,6 +1151,7 @@ namespace SteamBot
                             {
                                 Log.Warn("Confirming all trades.");
                                 RunOnce = false;
+                                TradesExist = true;
                             }
                             if (SteamGuardAccount.AcceptConfirmation(confirmation))
                             {
