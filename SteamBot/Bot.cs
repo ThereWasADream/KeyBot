@@ -1120,75 +1120,39 @@ namespace SteamBot
             }
             else
             {
-                var confirmed = false;
-                var FailedOnce = false;
-                var TradesExist = false;
-                var RunOnce = true;
-                var Refresh = false;
+                var Confirmed = false;
                 int WhileLoop = 0;
                 SteamGuardAccount.Session.SteamLogin = SteamWeb.Token;
                 SteamGuardAccount.Session.SteamLoginSecure = SteamWeb.TokenSecure;
-                while (confirmed == false)
+                while (Confirmed == false && WhileLoop < 25)
                 {
                     WhileLoop++;
-                    if (WhileLoop > 25)
+                    if (WhileLoop > 50)
                     {
-                        if (!FailedOnce)
-                        {
-                            Thread.Sleep(30000);
-                            WhileLoop = 0;
-                            FailedOnce = true;
-                        }
-                        else if (FailedOnce && !TradesExist)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            Thread.Sleep(30000);
-                            WhileLoop = 0;
-                        }
+                        break;
                     }
                     try
                     {
                         foreach (var confirmation in SteamGuardAccount.FetchConfirmations())
                         {
-                            if (RunOnce)
-                            {
-                                Log.Warn("Confirming all trades.");
-                                RunOnce = false;
-                                TradesExist = true;
-                            }
+                            Log.Warn("Confirming all trades.");
                             if (SteamGuardAccount.AcceptConfirmation(confirmation))
                             {
                                 Log.Success("Confirmed {0}. (Confirmation ID #{1})", confirmation.ConfirmationDescription, confirmation.ConfirmationID);
-                                confirmed = true;
-                            }
-                            else
-                            {
-                                confirmed = false;
+                                Confirmed = true;
                             }
                         }
                     }
                     catch (SteamAuth.SteamGuardAccount.WGTokenInvalidException)
                     {
                         Log.Error("Invalid session when trying to fetch trade confirmations.");
-                        Thread.Sleep(2000);
-                        Refresh = true;
+                        SteamGuardAccount.RefreshSession();
                     }
                     catch
                     {
                         Log.Error("Unexpected response from Steam when trying to fetch trade confirmations.");
-                        Thread.Sleep(2000);
-                        Refresh = true;
                     }
-                    if (Refresh)
-                    {
-                        SteamGuardAccount.RefreshSession();
-                        CheckCookies();
-                        Refresh = false;
-                    }
-                    Thread.Sleep(5000);
+                    Thread.Sleep(1);
                 }
             }
         }
