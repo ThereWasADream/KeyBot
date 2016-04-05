@@ -86,7 +86,7 @@ namespace SteamBot
 
             foreach (var runningBot in botProcs)
             {
-                runningBot.Start(this);
+                runningBot.Start();
 
                 Thread.Sleep(2000);
             }
@@ -153,7 +153,7 @@ namespace SteamBot
 
             if (index < ConfigObject.Bots.Length)
             {
-                botProcs[index].Start(this);
+                botProcs[index].Start();
             }
         }
 
@@ -161,7 +161,7 @@ namespace SteamBot
         /// Starts a bot given that bots configured username.
         /// </summary>
         /// <param name="botUserName">The bot's username.</param>
-        public void StartBot(string botUserName, BotManager manager)
+        public void StartBot(string botUserName)
         {
             mainLog.Debug(String.Format("Starting bot with username {0}.", botUserName));
 
@@ -171,7 +171,7 @@ namespace SteamBot
 
             foreach (var bot in res)
             {
-                bot.Start(manager);
+                bot.Start();
             }
 
         }
@@ -216,6 +216,7 @@ namespace SteamBot
                     {
                         //  Write out the exec command to the bot process' stdin
                         StreamWriter BotStdIn = botProcs[index].BotProcess.StandardInput;
+
                         BotStdIn.WriteLine("exec " + command);
                         BotStdIn.Flush();
                     }
@@ -251,6 +252,7 @@ namespace SteamBot
                     {
                         //  Write out the exec command to the bot process' stdin
                         StreamWriter BotStdIn = botProcs[index].BotProcess.StandardInput;
+
                         BotStdIn.WriteLine("input " + input);
                         BotStdIn.Flush();
                     }
@@ -347,8 +349,6 @@ namespace SteamBot
 
             public Configuration.BotInfo BotConfig { get; private set; }
 
-            //public BotManager Manager { get; private set; }
-
             public Process BotProcess { get; set; }
 
             // will not be null in threaded mode. will be null in process mode.
@@ -374,7 +374,7 @@ namespace SteamBot
                 }
             }
 
-            public void Start(BotManager manager)
+            public void Start()
             {
                 if (UsingProcesses)
                 {
@@ -386,12 +386,12 @@ namespace SteamBot
                 }
                 else if (TheBot == null)
                 {
-                    SpawnBotThread(BotConfig, manager);
+                    SpawnBotThread(BotConfig);
                     IsRunning = true;
                 }
                 else if (!TheBot.IsRunning)
                 {
-                    SpawnBotThread(BotConfig, manager);
+                    SpawnBotThread(BotConfig);
                     IsRunning = true;
                 }
             }
@@ -427,7 +427,7 @@ namespace SteamBot
             }
 
 
-            private void SpawnBotThread(Configuration.BotInfo botConfig, BotManager manager)
+            private void SpawnBotThread(Configuration.BotInfo botConfig)
             {
                 // the bot object itself is threaded so we just build it and start it.
                 Bot b = new Bot(botConfig,

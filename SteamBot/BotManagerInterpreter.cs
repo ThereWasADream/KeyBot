@@ -114,7 +114,7 @@ namespace SteamBot
                 }
                 else
                 {
-                    manager.StartBot(start, manager);
+                    manager.StartBot(start);
                 }
             }
 

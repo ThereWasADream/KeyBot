@@ -153,8 +153,8 @@ namespace SteamBot
                     {
                         if (botInfo.AutoStart)
                         {
-                            // auto start this particual bot...
-                            manager.StartBot(botInfo.Username, manager);
+                            // auto start this particular bot...
+                            manager.StartBot(botInfo.Username);
                         }
                     }
                 }
@@ -167,14 +167,11 @@ namespace SteamBot
                 // command interpreter loop.
                 do
                 {
+                    Console.Write("botmgr > ");
                     string inputText = Console.ReadLine();
 
-                    if (String.IsNullOrEmpty(inputText))
-                        continue;
-
-                    bmi.CommandInterpreter(inputText);
-
-                    Console.Write("botmgr > ");
+                    if (!String.IsNullOrEmpty(inputText))
+                        bmi.CommandInterpreter(inputText);
 
                 } while (!isclosing);
             }
