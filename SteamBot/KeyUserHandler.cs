@@ -24,7 +24,7 @@ namespace SteamBot
 		int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
         ulong Slots;
-		bool InventoryFailed, HasErrorRun, ChooseDonate, GaveChange, ChangeValidate, HasNonTradeCounted, HasCounted, WasBuying;
+		bool InventoryFailed, HasErrorRun, ChooseDonate, GaveChange, ChangeValidate, HasNonTradeCounted, HasCounted, WasBuying, DeleteAll;
 
 		System.Timers.Timer InviteMsgTimer = new System.Timers.Timer(2000);
 		System.Timers.Timer CraftCheckTimer = new System.Timers.Timer(100);
@@ -60,9 +60,13 @@ namespace SteamBot
 			return true;
 		}
 
-		public bool InFriendsList(SteamID sid)
+		public bool FriendsList(SteamID sid)
 		{
 			int friendCount = Bot.SteamFriends.GetFriendCount();
+            if (friendCount > 200)
+            {
+                DeleteAll = true;
+            }
 			for (int x = 0; x < friendCount; x++)
 			{
 				SteamID steamIdFriend = Bot.SteamFriends.GetFriendByIndex(x);
@@ -95,7 +99,30 @@ namespace SteamBot
 			{
 				TradeFrequency++;
 			}
+            if (DeleteAll)
+            {
+                DeleteAllFriends();
+                DeleteAll = false;
+            }
 		}
+
+        private void DeleteAllFriends()
+        {
+            int friendCount = Bot.SteamFriends.GetFriendCount();
+            for (int x = 0; x < friendCount; x++)
+            {
+                SteamID DeletingFriendID = Bot.SteamFriends.GetFriendByIndex(x);
+                if (!Bot.Admins.Contains(DeletingFriendID))
+                {
+                    Bot.SteamFriends.RemoveFriend(DeletingFriendID);
+                }
+                else
+                {
+                    Bot.Log.Success("Skipped Admin " + Bot.SteamFriends.GetFriendPersonaName(DeletingFriendID) + ".");
+                }
+            }
+            Bot.Log.Success("Automatically deleted all friends.");
+        }
 
 		public override void OnFriendRemove()
 		{
@@ -313,7 +340,7 @@ namespace SteamBot
 		public override bool OnTradeRequest()
 		{
 			Bot.Log.Success(Bot.SteamFriends.GetFriendPersonaName(OtherSID) + " (" + OtherSID + ") has requested to trade with me!");
-			if (InFriendsList(OtherSID))
+			if (FriendsList(OtherSID))
 			{
 				for (int retries = 0; retries < 5; retries++)
 				{
@@ -692,7 +719,7 @@ namespace SteamBot
 		{
 			var EnteredID = Convert.ToUInt64(input);
 			var DeleteID = new SteamID(EnteredID);
-			if (InFriendsList(DeleteID))
+			if (FriendsList(DeleteID))
 			{
 				Bot.SteamFriends.RemoveFriend(DeleteID);
 				Bot.Log.Success("Deleted " + Bot.SteamFriends.GetFriendPersonaName(DeleteID) + ".");
