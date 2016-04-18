@@ -193,10 +193,8 @@ namespace SteamBot
             createHandler = handlerCreator;
             BotControlClass = config.BotControlClass;
             SteamWeb = new SteamWeb();
-
             // Hacking around https
             ServicePointManager.ServerCertificateValidationCallback += SteamWeb.ValidateRemoteCertificate;
-
             Log.Debug ("Initializing Steam Bot...");            
             SteamClient = new SteamClient();
             SteamClient.AddHandler(new SteamNotifications());
@@ -205,11 +203,9 @@ namespace SteamBot
             SteamFriends = SteamClient.GetHandler<SteamFriends>();
             SteamGameCoordinator = SteamClient.GetHandler<SteamGameCoordinator>();
             SteamNotifications = SteamClient.GetHandler<SteamNotifications>();
-
             botThread = new BackgroundWorker { WorkerSupportsCancellation = true };
             botThread.DoWork += BackgroundWorkerOnDoWork;
             botThread.RunWorkerCompleted += BackgroundWorkerOnRunWorkerCompleted;
-            botThread.RunWorkerAsync();
         }
 
         ~Bot()
