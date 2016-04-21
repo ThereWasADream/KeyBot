@@ -1266,17 +1266,12 @@ namespace SteamBot
             {
                 try
                 {
-                    msg = SteamClient.GetCallback(true);
-                    if (msg != null)
-                    {
-                        HandleSteamMessage(msg);
-                    }
-
+                    msg = SteamClient.WaitForCallback(true);
+                    HandleSteamMessage(msg);
                     if(tradeOfferManager != null)
                     {
                         tradeOfferManager.HandleNextPendingTradeOfferUpdate();
                     }
-
                     Thread.Sleep(1);
                 }
                 catch (WebException e)
