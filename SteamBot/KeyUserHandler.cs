@@ -16,15 +16,15 @@ namespace SteamBot
 {
 	public class KeyUserHandler : UserHandler
 	{
-		private const string BotVersion = "3.2.2";
+		private const string BotVersion = "3.2.3";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(18.33); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(17.88); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(18.44); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(18.00); //low
 
-		int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
+        int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, Crates, KeyNumber, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
         ulong Slots;
-		bool InventoryFailed, HasErrorRun, ChooseDonate, GaveChange, ChangeValidate, HasNonTradeCounted, HasCounted, WasBuying, DeleteAll;
+		bool InventoryFailed, HasErrorRun, ChooseDonate, GaveChange, ChangeValidate, HasNonTradeCounted, HasCounted, WasBuying, DeleteAll, AddAllCrate, AddKey = false;
 
 		System.Timers.Timer InviteMsgTimer = new System.Timers.Timer(2000);
 		System.Timers.Timer CraftCheckTimer = new System.Timers.Timer(100);
@@ -949,7 +949,45 @@ namespace SteamBot
 					SendTradeMessage("You've currently added " + UserKeysAdded + " keys, worth " + UserMetalAdded.ToItemString(SellPricePerKey, "key") + ".");
 				}
 			}
-		}
+            else if (Bot.Admins.Contains(Trade.OtherSID))
+            {
+                if (message == ".crates")
+                {
+                    AddAllCrate = true;
+                    AddAllCrates();
+                }
+                if (message.StartsWith(".keys"))
+                {
+                    var KeyConversion = message.Substring(6);
+                    KeyNumber = Convert.ToInt32(KeyConversion);
+                    AddKey = true;
+                    AddKeys();
+                }
+            }
+        }
+
+        private void AddKeys()
+        {
+            int KeysAdded = 0;
+            while (KeysAdded < KeyNumber)
+            {
+                Trade.AddItemByDefindex(5021);
+                Bot.Log.Warn("I added a Key.");
+                KeysAdded++;
+            }
+        }
+
+        private void AddAllCrates()
+        {
+            int CratesAdded = 0;
+            while (CratesAdded < Crates)
+            {
+                //needs fixed
+                //Trade.AddItem();
+                Bot.Log.Warn("I added a Crate.");
+                CratesAdded++;
+            }
+        }
 
 		public override void OnTradeReady(bool ready)
 		{
@@ -959,16 +997,29 @@ namespace SteamBot
 				return;
 			}
 			Bot.Log.Success(Bot.SteamFriends.GetFriendPersonaName(OtherSID) + " is ready to trade!");
-			if (Validate())
-			{
-				Bot.Log.Success("Trade successfully validated.");
-				Trade.SetReady(true);
-			}
-			else if (ChangeValidate)
-			{
-				Bot.Log.Warn("I did not ready in order to make change.");
-				GiveChange();
-			}
+            if (!AddKey && !AddAllCrate)
+            {
+                if (Validate())
+                {
+                    Bot.Log.Success("Trade successfully validated.");
+                    Trade.SetReady(true);
+                }
+                else if (ChangeValidate)
+                {
+                    Bot.Log.Warn("I did not ready in order to make change.");
+                    GiveChange();
+                }
+            }
+            else if (AddKey)
+            {
+                Bot.Log.Success("Key add mode activated.");
+                Trade.SetReady(true);
+            }
+            else if (AddAllCrate)
+            {
+                Bot.Log.Success("Crate add mode activated.");
+                Trade.SetReady(true);
+            }
 			else
 			{
 				ResetTrade(false);
@@ -987,6 +1038,8 @@ namespace SteamBot
 			GaveChange = false;
 			ChangeValidate = false;
 			ChooseDonate = false;
+            AddAllCrate = false;
+            AddKey = false;
 			TradeCountInventory(message);
 			SendTradeMessage("I'm sorry, there were errors. Scroll up to read them.");
 			Bot.Log.Warn("There were errors and the trade was reset.");
@@ -996,18 +1049,33 @@ namespace SteamBot
 
 		public override void OnTradeAccept()
 		{
-			if (Validate() || IsAdmin)
-			{
-				try
-				{
-					Trade.AcceptTrade();
-				}
-				catch
-				{
-					Log.Warn("Trade might have failed.");
-					Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
-				}
-			}
+            if (!AddKey && !AddAllCrate)
+            {
+                if (Validate())
+                {
+                    try
+                    {
+                        Trade.AcceptTrade();
+                    }
+                    catch
+                    {
+                        Log.Warn("Trade might have failed.");
+                        Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
+                    }
+                }
+            }
+            else if (AddKey || AddAllCrate)
+            {
+                try
+                {
+                    Trade.AcceptTrade();
+                }
+                catch
+                {
+                    Log.Warn("Trade might have failed.");
+                    Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
+                }
+            }
 			Log.Success("Trade was successful!");
 			if (TradeFrequency > 1)
 			{
@@ -1044,28 +1112,29 @@ namespace SteamBot
                 case TradeOfferState.TradeOfferStateActive:
                     if (Bot.Admins.Contains(offer.PartnerSteamId))
                     {
-                        int WhileLoop = 0;
-                        bool success = false;
-                        while (!success)
-                        {
-                            WhileLoop++;
-                            TradeOfferAcceptResponse acceptResp = offer.Accept();
-                            if (acceptResp.Accepted)
-                            {
-                                Log.Success("Accepted Admin trade offer successfully.");
-                                //Log.Success("Accepted trade offer successfully : Trade ID: " + acceptResp.TradeId);
-                                success = true;
-                            }
-                            else if (WhileLoop > 100)
-                            {
-                                Bot.Log.Error("Unable to accept Admin trade offer.");
-                                break;
-                            }
-                        }
+                        //Why isn't this working?????
+//                        int WhileLoop = 0;
+//                        bool success = false;
+//                        while (!success)
+//                        {
+//                            WhileLoop++;
+//                            TradeOfferAcceptResponse acceptResp = offer.Accept();
+//                            if (acceptResp.Accepted)
+//                            {
+//                                Log.Success("Accepted Admin trade offer successfully.");
+//                                //Log.Success("Accepted trade offer successfully : Trade ID: " + acceptResp.TradeId);
+//                                success = true;
+//                            }
+//                            else if (WhileLoop > 100)
+//                            {
+//                                Bot.Log.Error("Unable to accept Admin trade offer.");
+//                                break;
+//                            }
+//                        }
                     }
                     else
                     {
-                        //nothing
+                        Bot.Log.Warn("Ignored trade offer from unidentified user.");
                     }
                     break;
                 case TradeOfferState.TradeOfferStateNeedsConfirmation:
@@ -1143,111 +1212,111 @@ namespace SteamBot
 
 		private void GiveChange()
 		{
-			if (!GaveChange && ValidateMetaltoKey > 0 && ExcessRefined > TF2Value.Zero)
-			{
-				SendTradeMessage("Change calculated. Here is " + ExcessRefined.ToRefString() + " back.");
-				bool RefIsDone = false;
-				bool RecIsDone = false;
-				bool ScrapIsDone = false;
-				bool DoneAddingMetal = false;
-				int WhileLoop = 0;
-				while (!DoneAddingMetal)
-				{
-					WhileLoop++;
-					if (ExcessRefined >= TF2Value.Refined && !RefIsDone)
-					{
-						if (Refined > 0)
-						{
-							Trade.AddItemByDefindex(5002);
-							Bot.Log.Warn("I added Refined Metal.");
-							BotMetalAdded += TF2Value.Refined;
-							ExcessRefined -= TF2Value.Refined;
-							ChangeAdded += TF2Value.Refined;
-							Refined--;
-							RefinedAdded++;
-						}
-						else
-						{
-							RefIsDone = true;
-						}
-					}
-					else if (ExcessRefined < TF2Value.Refined && !RefIsDone)
-					{
-						RefIsDone = true;
-					}
-					else if (ExcessRefined >= TF2Value.Reclaimed && RefIsDone && !RecIsDone)
-					{
-						if (Reclaimed > 0)
-						{
-							Trade.AddItemByDefindex(5001);
-							Bot.Log.Warn("I added Reclaimed Metal.");
-							BotMetalAdded += TF2Value.Reclaimed;
-							ExcessRefined -= TF2Value.Reclaimed;
-							ChangeAdded += TF2Value.Reclaimed;
-							Reclaimed--;
-							ReclaimedAdded++;
-						}
-						else
-						{
-							RecIsDone = true;
-						}
-					}
-					else if (ExcessRefined < TF2Value.Reclaimed && !RecIsDone)
-					{
-						RecIsDone = true;
-					}
-					else if (ExcessRefined >= TF2Value.Scrap && RefIsDone && RecIsDone && !ScrapIsDone)
-					{
-						if (Scrap > 0)
-						{
-							Trade.AddItemByDefindex(5000);
-							Bot.Log.Warn("I added Scrap Metal.");
-							BotMetalAdded += TF2Value.Scrap;
-							ExcessRefined -= TF2Value.Scrap;
-							ChangeAdded += TF2Value.Scrap;
-							Scrap--;
-							ScrapAdded++;
-						}
-						else
-						{
-							ScrapIsDone = true;
-						}
-					}
-					else if (ExcessRefined == TF2Value.Zero)
-					{
-						SendTradeMessage("Successfully gave change. Please click \"Ready to Trade\" again to complete.");
-						Bot.Log.Success("Successfully gave change.");
-						ScrapIsDone = true;
-						DoneAddingMetal = true;
-						GaveChange = true;
-					}
-					else if (RefIsDone && RecIsDone && ScrapIsDone && WhileLoop > 50)
-					{
-						SendTradeMessage("Error: Sorry, not enough change at the moment.");
-						SendTradeMessage("I craft change every " + (CraftCheckTimer.Interval / 1000).ToString() + " seconds.");
-						Bot.Log.Error("Couldn't add enough metal for the user while giving change!");
-						ResetTrade(false);
-						DoneAddingMetal = true;
-					}
-					else if (WhileLoop > 100)
-					{
-						SendTradeMessage("Error: I cannot add metal at the moment. Either Steam is broken or I am broken!");
-						Bot.Log.Error("Error: Bot could not add metal to a trade.");
-						ResetTrade(false);
-						break;
-					}
-				}
-			}
-			else if (GaveChange)
-			{
-				SendTradeMessage("Error: I already gave you change and at this time I can't do so again.");
-				SendTradeMessage("Doing so would cause the trade to fail.");
-				ResetTrade(false);
-				Bot.Log.Error("User tried to get change more than once.");
-			}
+            if (!GaveChange && ValidateMetaltoKey > 0 && ExcessRefined > TF2Value.Zero)
+            {
+                SendTradeMessage("Change calculated. Here is " + ExcessRefined.ToRefString() + " back.");
+                bool RefIsDone = false;
+                bool RecIsDone = false;
+                bool ScrapIsDone = false;
+                bool DoneAddingMetal = false;
+                int WhileLoop = 0;
+                while (!DoneAddingMetal)
+                {
+                    WhileLoop++;
+                    if (ExcessRefined >= TF2Value.Refined && !RefIsDone)
+                    {
+                        if (Refined > 0)
+                        {
+                            Trade.AddItemByDefindex(5002);
+                            Bot.Log.Warn("I added Refined Metal.");
+                            BotMetalAdded += TF2Value.Refined;
+                            ExcessRefined -= TF2Value.Refined;
+                            ChangeAdded += TF2Value.Refined;
+                            Refined--;
+                            RefinedAdded++;
+                        }
+                        else
+                        {
+                            RefIsDone = true;
+                        }
+                    }
+                    else if (ExcessRefined < TF2Value.Refined && !RefIsDone)
+                    {
+                        RefIsDone = true;
+                    }
+                    else if (ExcessRefined >= TF2Value.Reclaimed && RefIsDone && !RecIsDone)
+                    {
+                        if (Reclaimed > 0)
+                        {
+                            Trade.AddItemByDefindex(5001);
+                            Bot.Log.Warn("I added Reclaimed Metal.");
+                            BotMetalAdded += TF2Value.Reclaimed;
+                            ExcessRefined -= TF2Value.Reclaimed;
+                            ChangeAdded += TF2Value.Reclaimed;
+                            Reclaimed--;
+                            ReclaimedAdded++;
+                        }
+                        else
+                        {
+                            RecIsDone = true;
+                        }
+                    }
+                    else if (ExcessRefined < TF2Value.Reclaimed && !RecIsDone)
+                    {
+                        RecIsDone = true;
+                    }
+                    else if (ExcessRefined >= TF2Value.Scrap && RefIsDone && RecIsDone && !ScrapIsDone)
+                    {
+                        if (Scrap > 0)
+                        {
+                            Trade.AddItemByDefindex(5000);
+                            Bot.Log.Warn("I added Scrap Metal.");
+                            BotMetalAdded += TF2Value.Scrap;
+                            ExcessRefined -= TF2Value.Scrap;
+                            ChangeAdded += TF2Value.Scrap;
+                            Scrap--;
+                            ScrapAdded++;
+                        }
+                        else
+                        {
+                            ScrapIsDone = true;
+                        }
+                    }
+                    else if (ExcessRefined == TF2Value.Zero)
+                    {
+                        SendTradeMessage("Successfully gave change. Please click \"Ready to Trade\" again to complete.");
+                        Bot.Log.Success("Successfully gave change.");
+                        ScrapIsDone = true;
+                        DoneAddingMetal = true;
+                        GaveChange = true;
+                    }
+                    else if (RefIsDone && RecIsDone && ScrapIsDone && WhileLoop > 50)
+                    {
+                        SendTradeMessage("Error: Sorry, not enough change at the moment.");
+                        SendTradeMessage("I craft change every " + (CraftCheckTimer.Interval / 1000).ToString() + " seconds.");
+                        Bot.Log.Error("Couldn't add enough metal for the user while giving change!");
+                        ResetTrade(false);
+                        DoneAddingMetal = true;
+                    }
+                    else if (WhileLoop > 100)
+                    {
+                        SendTradeMessage("Error: I cannot add metal at the moment. Either Steam is broken or I am broken!");
+                        Bot.Log.Error("Error: Bot could not add metal to a trade.");
+                        ResetTrade(false);
+                        break;
+                    }
+                }
+            }
+            else if (GaveChange)
+            {
+                SendTradeMessage("Error: I already gave you change and at this time I can't do so again.");
+                SendTradeMessage("Doing so would cause the trade to fail.");
+                ResetTrade(false);
+                Bot.Log.Error("User tried to get change more than once.");
+            }
 			else
 			{
-				SendTradeMessage("Error: It looks like I shouldn't be trying to give change.");
+				SendTradeMessage("Error: It looks like I shouldn't be trying to give you anything.");
 				Bot.Log.Error("I received a change request, but conditions did not pass!");
 				ResetTrade(false);
 			}
@@ -1476,7 +1545,7 @@ namespace SteamBot
 					HasNonTradeCounted = true;
 					Done = true;
 				}
-				catch (Exception e)
+				catch
 				{
 					retries++;
 					Thread.Sleep((retries * 50) * (retries / 2));
@@ -1513,6 +1582,7 @@ namespace SteamBot
 					Reclaimed = 0;
 					InventoryKeys = 0;
 					KeysCanBuy = 0;
+                    Crates = 0;
 					Inventory.Item[] array = inventory;
 					for (int i = 0; i < array.Length; i++)
 					{
@@ -1537,6 +1607,10 @@ namespace SteamBot
 						{
 							InventoryKeys++;
 						}
+                        else
+                        {
+                            Crates++;
+                        }
 					}
 					KeysCanBuy = InventoryMetal.GetPriceUsingItem(BuyPricePerKey, out LeftoverMetal);
 					if (message)
@@ -1586,6 +1660,8 @@ namespace SteamBot
 			GaveChange = false;
 			ChangeValidate = false;
 			HasCounted = false;
+            AddAllCrate = false;
+            AddKey = false;
 		}
 	}
 }
