@@ -18,8 +18,8 @@ namespace SteamBot
 	{
 		private const string BotVersion = "3.2.4";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.22); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(18.77); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.33); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(18.88); //low
 
         int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, Crates, KeyNumber, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
@@ -1107,34 +1107,10 @@ namespace SteamBot
         {
             switch (offer.OfferState)
             {
-                case TradeOfferState.TradeOfferStateAccepted:
-                    break;
                 case TradeOfferState.TradeOfferStateActive:
-                    if (Bot.Admins.Contains(offer.PartnerSteamId))
+                    if (!offer.IsOurOffer)
                     {
-                        //Why isn't this working?????
-//                        int WhileLoop = 0;
-//                        bool success = false;
-//                        while (!success)
-//                        {
-//                            WhileLoop++;
-//                            TradeOfferAcceptResponse acceptResp = offer.Accept();
-//                            if (acceptResp.Accepted)
-//                            {
-//                                Log.Success("Accepted Admin trade offer successfully.");
-//                                //Log.Success("Accepted trade offer successfully : Trade ID: " + acceptResp.TradeId);
-//                                success = true;
-//                            }
-//                            else if (WhileLoop > 100)
-//                            {
-//                                Bot.Log.Error("Unable to accept Admin trade offer.");
-//                                break;
-//                            }
-//                        }
-                    }
-                    else
-                    {
-                        Bot.Log.Warn("Ignored trade offer from unidentified user.");
+                        OnNewTradeOffer(offer);
                     }
                     break;
                 case TradeOfferState.TradeOfferStateNeedsConfirmation:
@@ -1444,37 +1420,37 @@ namespace SteamBot
 			return errors.Count == 0;
 		}
 
-//		public override void OnNewTradeOffer(TradeOffer offer)
-//		{
-//			if (Bot.Admins.Contains(offer.PartnerSteamId))
-//			{
-//				int WhileLoop = 0;
-//				bool success = false;
-//				while (!success)
-//				{
-//					WhileLoop++;
-//                    TradeOfferAcceptResponse acceptResp = offer.Accept();
-//                    if (acceptResp.Accepted)
-//					{
-//						Log.Success("Accepted Admin trade offer successfully.");
-//                        //Log.Success("Accepted trade offer successfully : Trade ID: " + acceptResp.TradeId);
-//						success = true;
-//					}
-//					else if (WhileLoop > 100)
-//					{
-//						Bot.Log.Error("Unable to accept Admin trade offer.");
-//						break;
-//					}
-//				}
-//			}
-//			else
-//			{
-//                //if (offer = offer.)
-//                //{
-//                    //Bot.SteamFriends.SendChatMessage(offer.PartnerSteamId, EChatEntryType.ChatMsg, "I'm sorry, at this time I do not accept trade offers. Please check back some time, in the future I will have the ability to send and receive trade offers.");
-//                //}
-//			}
-//		}
+		public void OnNewTradeOffer(TradeOffer offer)
+		{
+			if (Bot.Admins.Contains(offer.PartnerSteamId))
+			{
+				int WhileLoop = 0;
+				bool success = false;
+				while (!success)
+				{
+					WhileLoop++;
+                    TradeOfferAcceptResponse acceptResp = offer.Accept();
+                    if (acceptResp.Accepted)
+					{
+						Log.Success("Accepted Admin trade offer successfully.");
+                        //Log.Success("Accepted trade offer successfully : Trade ID: " + acceptResp.TradeId);
+						success = true;
+					}
+					else if (WhileLoop > 100)
+					{
+						Bot.Log.Error("Unable to accept Admin trade offer.");
+						break;
+					}
+				}
+			}
+			else
+			{
+                //if (offer = offer.)
+                //{
+                    //Bot.SteamFriends.SendChatMessage(offer.PartnerSteamId, EChatEntryType.ChatMsg, "I'm sorry, at this time I do not accept trade offers. Please check back some time, in the future I will have the ability to send and receive trade offers.");
+                //}
+			}
+		}
 
 		public void CountInventory(bool message)
 		{
