@@ -16,10 +16,10 @@ namespace SteamBot
 {
 	public class KeyUserHandler : UserHandler
 	{
-		private const string BotVersion = "3.2.4";
+		private const string BotVersion = "3.2.5";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.55); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.11); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.66); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.22); //low
 
         int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, Crates, KeyNumber, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
@@ -62,12 +62,8 @@ namespace SteamBot
 
 		public bool FriendsList(SteamID sid)
 		{
-			int friendCount = Bot.SteamFriends.GetFriendCount();
-            if (friendCount > 200)
-            {
-                DeleteAll = true;
-            }
-			for (int x = 0; x < friendCount; x++)
+            int friendCount = Bot.SteamFriends.GetFriendCount();
+            for (int x = 0; x < friendCount; x++)
 			{
 				SteamID steamIdFriend = Bot.SteamFriends.GetFriendByIndex(x);
 				if (steamIdFriend.Equals(sid))
@@ -89,6 +85,11 @@ namespace SteamBot
 		{
 			Cron.Interval = 10800000;
             CountInventory(false);
+            int friendCount = Bot.SteamFriends.GetFriendCount();
+            if (friendCount > 200)
+            {
+                DeleteAll = true;
+            }
             double FullCheck = Item / Slots;
             var HeadAdmin = new SteamID(Bot.Admins.First());
             if (FullCheck > 0.9)
@@ -300,7 +301,7 @@ namespace SteamBot
 								Bot.Log.Success("Skipped Admin " + Bot.SteamFriends.GetFriendPersonaName(DeletingFriendID) + ".");
 							}
 						}
-						Bot.Log.Success("Deleted all friends.");
+						Bot.Log.Success("Deleting all friends.");
 					}
 					else
 					{
