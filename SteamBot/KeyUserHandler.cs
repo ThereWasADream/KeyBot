@@ -18,8 +18,8 @@ namespace SteamBot
 	{
 		private const string BotVersion = "3.2.5";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.66); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.22); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.77); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.33); //low
 
         int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, Crates, KeyNumber, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
@@ -62,8 +62,8 @@ namespace SteamBot
 
 		public bool FriendsList(SteamID sid)
 		{
-            int friendCount = Bot.SteamFriends.GetFriendCount();
-            for (int x = 0; x < friendCount; x++)
+            int friendListCount = Bot.SteamFriends.GetFriendCount();
+            for (int x = 0; x < friendListCount; x++)
 			{
 				SteamID steamIdFriend = Bot.SteamFriends.GetFriendByIndex(x);
 				if (steamIdFriend.Equals(sid))
