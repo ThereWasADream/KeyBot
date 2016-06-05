@@ -18,8 +18,8 @@ namespace SteamBot
 	{
 		private const string BotVersion = "3.2.5";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(19.77); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.33); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(20.00); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.55); //low
 
         int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, Crates, KeyNumber, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
@@ -1425,23 +1425,31 @@ namespace SteamBot
 		{
 			if (Bot.Admins.Contains(offer.PartnerSteamId))
 			{
-				int WhileLoop = 0;
+                int WhileLoop = 0;
 				bool success = false;
 				while (!success)
 				{
 					WhileLoop++;
-                    TradeOfferAcceptResponse acceptResp = offer.Accept();
-                    if (acceptResp.Accepted)
-					{
-						Log.Success("Accepted Admin trade offer successfully.");
-                        //Log.Success("Accepted trade offer successfully : Trade ID: " + acceptResp.TradeId);
-						success = true;
-					}
-					else if (WhileLoop > 100)
-					{
-						Bot.Log.Error("Unable to accept Admin trade offer.");
-						break;
-					}
+                    try
+                    {
+                        TradeOfferAcceptResponse acceptResp = offer.Accept();
+                        if (acceptResp.Accepted)
+                        {
+                            Bot.AcceptAllMobileTradeConfirmations();
+                            Log.Success("Accepted Admin trade offer successfully.");
+                            //Log.Success("Accepted trade offer successfully : Trade ID: " + acceptResp.TradeId);
+                            success = true;
+                        }
+                        else if (WhileLoop > 10)
+                        {
+                            Bot.Log.Error("Unable to accept Admin trade offer.");
+                            break;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Bot.Log.Error(e.ToString());
+                    }
 				}
 			}
 			else
