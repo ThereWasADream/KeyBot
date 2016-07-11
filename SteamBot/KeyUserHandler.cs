@@ -21,10 +21,10 @@ namespace SteamBot
 		public static TF2Value SellPricePerKey = TF2Value.FromRef(20.22); //high
 		public static TF2Value BuyPricePerKey = TF2Value.FromRef(19.77); //low
 
-        int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, ScamAttempt, NonTradeScrap, Scrap, Crates, KeyNumber, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
+        int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, PayAttention, ScamAttempt, NonTradeScrap, Scrap, Crates, KeyNumber, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
         ulong Slots;
-		bool InventoryFailed, HasErrorRun, ChooseDonate, GaveChange, ChangeValidate, HasNonTradeCounted, HasCounted, WasBuying, DeleteAll, AddAllCrate, AddKey = false;
+		bool InventoryFailed, HasErrorRun, ChooseDonate, GaveChange, ChangeValidate, HasNonTradeCounted, HasCounted, WasBuying, DeleteAll, AddAllCrate, Keyless, AddKey = false;
 
 		System.Timers.Timer InviteMsgTimer = new System.Timers.Timer(2000);
 		System.Timers.Timer CraftCheckTimer = new System.Timers.Timer(100);
@@ -448,7 +448,8 @@ namespace SteamBot
 			}
 			if (InventoryKeys == 0)
 			{
-				SendTradeMessage("I don't have any keys to sell right now.");
+                Keyless = true;
+                SendTradeMessage("I don't have any keys to sell right now.");
 				SendTradeMessage("I am buying keys for " + BuyPricePerKey.ToRefString() + ".");
 			}
 			else if (InventoryMetal < BuyPricePerKey)
@@ -473,50 +474,72 @@ namespace SteamBot
 				{
 					SendTradeMessage("That's an item from the wrong game!");
 				}
-				if (!HasCounted)
-				{
-					SendTradeMessage("I haven't finished counting my inventory yet.");
-					SendTradeMessage("Please remove any items you added, and then re-add them or there could be errors.");
-				}
-				else if (InvalidItem > 2)
-				{
-					Trade.CancelTrade();
-					IgnoringBot++;
-					SendChatMessage("I am used for buying and selling keys only. I can only accept metal or keys as payment.");
-					Bot.Log.Warn("Booted user for adding invalid items.");
-					Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
-				}
-				else if (IgnoringBot > 4)
-				{
-					Trade.CancelTrade();
-					SendChatMessage("It would appear that you haven't checked my inventory. I either do not have enough metal, or do not have enough keys to complete your trade.");
-					Bot.Log.Warn("Booted user for ignoring me.");
-					Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
-				}
-				else if (ScamAttempt > 3)
-				{
-					Trade.CancelTrade();
-					SendChatMessage("The trade isn't even again. Please be more careful when trading or I will delete you.");
-					Bot.Log.Warn("Booted user for trying to scam me.");
-					Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
-				}
+                if (!HasCounted)
+                {
+                    SendTradeMessage("I haven't finished counting my inventory yet.");
+                    SendTradeMessage("Please remove any items you added, and then re-add them or there could be errors.");
+                }
+                else if (InvalidItem > 2)
+                {
+                    Trade.CancelTrade();
+                    IgnoringBot++;
+                    SendChatMessage("I am used for buying and selling keys only. I can only accept metal or keys as payment.");
+                    Bot.Log.Warn("Booted user for adding invalid items.");
+                    Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
+                }
+                else if (IgnoringBot > 4)
+                {
+                    Trade.CancelTrade();
+                    SendChatMessage("It would appear that you haven't checked my inventory. I either do not have enough metal, or do not have enough keys to complete your trade.");
+                    Bot.Log.Warn("Booted user for ignoring me.");
+                    Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
+                }
+                else if (ScamAttempt > 3)
+                {
+                    Trade.CancelTrade();
+                    SendChatMessage("The trade isn't even again. Please be more careful when trading or I will delete you.");
+                    Bot.Log.Warn("Booted user for trying to scam me.");
+                    Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
+                }
+                else if (PayAttention > 10)
+                {
+                    Trade.CancelTrade();
+                    SendChatMessage("I've been trying to tell you I don't have any keys. Please pay attention and come back when I have some.");
+                    Bot.Log.Warn("Booted user for trying to buy keys when I don't have any.");
+                    Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
+                }
 				else if (item.Defindex == 5000)
 				{
 					UserMetalAdded += TF2Value.Scrap;
 					Bot.Log.Success(Bot.SteamFriends.GetFriendPersonaName(OtherSID) + " added: " + item.ItemName);
 					WasBuying = true;
+                    if (Keyless)
+                    {
+                        SendTradeMessage("I don't have any keys...");
+                        PayAttention++;
+                    }
 				}
 				else if (item.Defindex == 5001)
 				{
 					UserMetalAdded += TF2Value.Reclaimed;
 					Bot.Log.Success(Bot.SteamFriends.GetFriendPersonaName(OtherSID) + " added: " + item.ItemName);
 					WasBuying = true;
+                    if (Keyless)
+                    {
+                        SendTradeMessage("I don't have any keys...");
+                        PayAttention++;
+                    }
 				}
 				else if (item.Defindex == 5002)
 				{
 					UserMetalAdded += TF2Value.Refined;
 					Bot.Log.Success(Bot.SteamFriends.GetFriendPersonaName(OtherSID) + " added: " + item.ItemName);
 					WasBuying = true;
+                    if (Keyless)
+                    {
+                        SendTradeMessage("I don't have any keys...");
+                        PayAttention++;
+                    }
 				}
 				else if (item.Defindex == 5021)
 				{
@@ -1625,7 +1648,9 @@ namespace SteamBot
 		public void ReInit()
 		{
 			IgnoringBot = 0;
+            PayAttention = 0;
 			NumKeys = 0;
+            Keyless = false;
 			AdditionalRefined = TF2Value.Zero;
 			UserMetalAdded = TF2Value.Zero;
 			UserKeysAdded = 0;
