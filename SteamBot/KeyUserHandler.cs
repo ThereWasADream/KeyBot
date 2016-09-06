@@ -1107,7 +1107,7 @@ namespace SteamBot
 			}
 			ScamAttempt = 0;
 			IgnoringBot = 0;
-			SendChatMessage("I was coded by http://steamcommunity.com/id/Narthalion. Please report all bugs/problems to me! It helps fix issues and make me better.");
+			SendChatMessage("I was coded by http://steamcommunity.com/id/Narthalion . Please report all bugs/problems to me! It helps fix issues and make me better.");
             ConfirmationTimer.Elapsed += new ElapsedEventHandler(OnConfirmationTimerElapsed);
             ConfirmationTimer.Enabled = true;
 			Bot.SteamFriends.SetPersonaState(EPersonaState.LookingToTrade);
