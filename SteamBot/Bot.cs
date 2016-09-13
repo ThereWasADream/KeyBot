@@ -1110,6 +1110,7 @@ namespace SteamBot
         /// </summary>
         public void AcceptAllMobileTradeConfirmations()
         {
+            bool OnlyOnce = false;
             if (SteamGuardAccount == null)
             {
                 Log.Warn("Bot account does not have 2FA enabled.");
@@ -1141,7 +1142,11 @@ namespace SteamBot
                     }
                     catch (SteamAuth.SteamGuardAccount.WGTokenInvalidException)
                     {
-                        Log.Error("Invalid session when trying to fetch trade confirmations.");
+                        if (OnlyOnce)
+                        {
+                            Log.Error("Invalid session when trying to fetch trade confirmations.");
+                            OnlyOnce = true;
+                        }
                         SteamGuardAccount.RefreshSession();
                     }
                     catch
