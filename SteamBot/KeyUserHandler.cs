@@ -18,8 +18,8 @@ namespace SteamBot
 	{
 		private const string BotVersion = "3.2.5";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(24.00); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(23.77); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(24.44); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(24.11); //low
 
         int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, PayAttention, ScamAttempt, NonTradeScrap, Scrap, Crates, KeyNumber, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
