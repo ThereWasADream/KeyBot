@@ -16,10 +16,10 @@ namespace SteamBot
 {
 	public class KeyUserHandler : UserHandler
 	{
-		private const string BotVersion = "3.2.5";
+		private const string BotVersion = "3.3.0";
 		public TF2Value UserMetalAdded, NonTradeInventoryMetal, InventoryMetal, BotMetalAdded, ExcessRefined, KeysToScrap, AdditionalRefined, ChangeAdded, LeftoverMetal;
-		public static TF2Value SellPricePerKey = TF2Value.FromRef(26.33); //high
-		public static TF2Value BuyPricePerKey = TF2Value.FromRef(26.00); //low
+		public static TF2Value SellPricePerKey = TF2Value.FromRef(26.44); //high
+		public static TF2Value BuyPricePerKey = TF2Value.FromRef(26.11); //low
 
         int KeysCanBuy, NonTradeKeysCanBuy, ValidateMetaltoKey, PreviousKeys, UserKeysAdded, BotKeysAdded, InventoryKeys, NonTradeInventoryKeys, IgnoringBot, PayAttention, ScamAttempt, NonTradeScrap, Scrap, Crates, KeyNumber, ScrapAdded, NonTradeReclaimed, Reclaimed, ReclaimedAdded, NonTradeRefined, Refined, RefinedAdded, InvalidItem, NumKeys, TradeFrequency;
         double Item;
@@ -1124,7 +1124,7 @@ namespace SteamBot
             Bot.Log.Warn("Trade ended, awaiting confirmation.");
 			SendChatMessage("Please complete any mobile or email confirmations. Type \"confirm\" if the bot does not confirm within 5 minutes.");
             var tradeid = tradeOfferID.ToString();
-            Bot.AcceptTradeConfirmation(tradeid);
+            Bot.AcceptAllMobileTradeConfirmations();
 		}
 
         public override void OnTradeOfferUpdated(TradeOffer offer)

@@ -51,13 +51,13 @@
     <Reference Include="pango-sharp, Version=2.12.0.0, Culture=neutral, PublicKeyToken=35e10195dab3c99f" />
     <Reference Include="Mono.Posix, Version=2.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756" />
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SteamKit2">
-      <HintPath>..\packages\SteamKit2.1.6.5\lib\net40\SteamKit2.dll</HintPath>
+      <HintPath>..\packages\SteamKit2.1.8.1\lib\net45\SteamKit2.dll</HintPath>
     </Reference>
     <Reference Include="SteamAuth">
-      <HintPath>..\packages\SteamAuth.1.0.1\lib\net45\SteamAuth.dll</HintPath>
+      <HintPath>..\packages\SteamAuth.1.1.0\lib\net45\SteamAuth.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
