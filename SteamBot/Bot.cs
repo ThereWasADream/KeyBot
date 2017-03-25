@@ -780,31 +780,66 @@ namespace SteamBot
             return inventory;
         }
 
-        public void AcceptAllMobileTradeConfirmations()
+        public bool AcceptTradeConfirmation (string tradeOfferId)
         {
-            if (SteamGuardAccount == null)
-            {
-                Log.Warn("Bot account does not have 2FA enabled.");
-            }
-            else
-            {
+            var confirmed = false;
+            if (SteamGuardAccount == null) {
+                Log.Warn ("Bot account does not have 2FA enabled.");
+            } else {
                 SteamGuardAccount.Session.SteamLogin = SteamWeb.Token;
                 SteamGuardAccount.Session.SteamLoginSecure = SteamWeb.TokenSecure;
-                try
-                {
-                    foreach (var confirmation in SteamGuardAccount.FetchConfirmations())
-                    {
-                        if (SteamGuardAccount.AcceptConfirmation(confirmation))
-                        {
-                            Log.Success("Confirmed {0}. (Confirmation ID #{1})", confirmation.Description, confirmation.ID);
+                try {
+                    foreach (var confirmation in SteamGuardAccount.FetchConfirmations ()) {
+                        var confirmationTradeOfferId = SteamGuardAccount.GetConfirmationTradeOfferID (confirmation);
+                        if (tradeOfferId != confirmationTradeOfferId.ToString ()) continue;
+                        if (SteamGuardAccount.AcceptConfirmation (confirmation)) {
+                            confirmed = true;
+                            Log.Success ("Confirmed {0}. (Confirmation ID #{1})", confirmation.Description, confirmation.ID);
+                            break;
                         }
                     }
+                } catch (SteamAuth.SteamGuardAccount.WGTokenInvalidException) {
+                    Log.Error ("Invalid session when trying to fetch trade confirmations.");
                 }
-                catch (SteamAuth.SteamGuardAccount.WGTokenInvalidException)
-                {
-                    Log.Error("Invalid session when trying to fetch trade confirmations.");
+            }
+            return confirmed;
+        }
+
+        public void AcceptAllMobileTradeConfirmations()
+        {
+            bool OnlyOnce = false;
+            if (SteamGuardAccount == null) {
+                Log.Warn ("Bot account does not have 2FA enabled.");
+            } else {
+                var Confirmed = false;
+                int WhileLoop = 0;
+                SteamGuardAccount.Session.SteamLogin = SteamWeb.Token;
+                SteamGuardAccount.Session.SteamLoginSecure = SteamWeb.TokenSecure;
+                while (Confirmed == false && WhileLoop < 25) {
+                    WhileLoop++;
+                    if (WhileLoop > 50) {
+                        break;
+                    }
+                    try {
+                        foreach (var confirmation in SteamGuardAccount.FetchConfirmations ()) {
+                            Log.Warn ("Confirming all trades.");
+                            if (SteamGuardAccount.AcceptConfirmation (confirmation)) {
+                                Log.Success ("Confirmed {0}. (Confirmation ID #{1})", confirmation.Description, confirmation.ID);
+                                Confirmed = true;
+                            }
+                        }
+                    } catch (SteamAuth.SteamGuardAccount.WGTokenInvalidException) {
+                        if (OnlyOnce) {
+                            Log.Error ("Invalid session when trying to fetch trade confirmations.");
+                            OnlyOnce = true;
+                        }
+                        SteamGuardAccount.RefreshSession ();
+                    } catch {
+                        Log.Error ("Unexpected response from Steam when trying to fetch trade confirmations.");
+                    }
+                    Thread.Sleep (1);
                 }
-            }                        
+            }
         }
 
         /// <summary>
