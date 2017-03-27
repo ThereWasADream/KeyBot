@@ -404,7 +404,7 @@ namespace SteamBot
                 }
                 catch (Exception e)
                 {
-                    Log.Error("Error while polling trade offers: " + e);
+                    Log.Error("Error while polling trade offers: " + e.Message);
                 }
 
                 Thread.Sleep(tradeOfferPollingIntervalSecs*1000);
@@ -810,11 +810,6 @@ namespace SteamBot
                 {
                     Log.Error ("Invalid session when trying to fetch trade confirmations.");
                 }
-                catch (WebException)
-                {
-                    Log.Error (".");
-                }
-
             }
             return confirmed;
         }
